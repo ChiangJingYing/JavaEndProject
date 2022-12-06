@@ -1,4 +1,5 @@
 import BallPanel.BallPlatePanel;
+import GameObject.Attribute;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;

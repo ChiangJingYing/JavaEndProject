@@ -22,7 +22,7 @@ public class Ball extends JPanel {
         this.attribute = attribute;
         try {
             if (!isStrong)
-                image = ImageIO.read(Objects.requireNonNull(getClass().getResource("./Image/Balls/" + attribute + ".png")));
+                image = ImageIO.read(Objects.requireNonNull(getClass().getResource("../Image/Balls/" + attribute + ".png")));
             else // When isStrong ball get other than default img
                 image = ImageIO.read(Objects.requireNonNull(getClass().getResource(attribute + ".png")));
         } catch (IOException e) {

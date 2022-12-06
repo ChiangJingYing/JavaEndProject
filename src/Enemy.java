@@ -1,3 +1,6 @@
+import GameObject.Attribute;
+import GameObject.Skill;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
