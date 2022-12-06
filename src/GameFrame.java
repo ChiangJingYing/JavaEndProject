@@ -13,10 +13,12 @@ public class GameFrame extends JFrame {
     Ball ControlBall;
     Random random;
 
-    public GameFrame(String title, int width, int height) throws HeadlessException {
+    public GameFrame(String title, int width, int height) {
         super(title);
         random = new Random();
         balls = new ArrayList<>();
+
+        // init Balls
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 5; j++) {
                 balls.add(new Ball(j * 100, i * 100, Attribute.values()[random.nextInt(6)]));
@@ -29,6 +31,8 @@ public class GameFrame extends JFrame {
         GameKernel.GameInterface gi = new GameKernel.GameInterface() {
             @Override
             public void paint(Graphics g) {
+
+                // draw BallPlate
                 for (Ball ball : balls) {
                     g.drawImage(ball.image, ball.x, ball.y, 100, 100, null);
                 }
@@ -44,10 +48,12 @@ public class GameFrame extends JFrame {
                 .enableMouseTrack((e, state, trigTime) -> {
                     if (state == CommandSolver.MouseState.DRAGGED) {
                         Ball HitBall = checkMouseOnBall(e.getPoint());
+                        // get control ball
                         if (HitBall != null) {
                             if (ControlBall == null) {
                                 ControlBall = HitBall;
                             } else if (HitBall != ControlBall) {
+                                // exchange two ball
                                 int tmpx = HitBall.x;
                                 int tmpy = HitBall.y;
                                 int indexControlBall = ControlBall.y / 100 * 5 + ControlBall.x / 100;
@@ -76,6 +82,7 @@ public class GameFrame extends JFrame {
         gk.run(true);
     }
 
+    // check if mouse on ball
     public Ball checkMouseOnBall(Point e) {
         int x = e.x;
         int y = e.y;
