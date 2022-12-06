@@ -8,6 +8,8 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static GameObject.GlobalParameter.*;
+
 public class GameFrame extends JFrame {
     ArrayList<Ball> balls;
     Ball ControlBall;
@@ -19,9 +21,9 @@ public class GameFrame extends JFrame {
         balls = new ArrayList<>();
 
         // init Balls
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 5; j++) {
-                balls.add(new Ball(j * 100, i * 100, Attribute.values()[random.nextInt(6)]));
+        for (int i = 0; i < BALLPLATEHEIGHT; i++) {
+            for (int j = 0; j < BALLPLATEHEIGHT; j++) {
+                balls.add(new Ball(j * BALLWIDTH, i * BALLHEIGHT, Attribute.values()[random.nextInt(6)]));
             }
         }
 
@@ -43,7 +45,7 @@ public class GameFrame extends JFrame {
 
             }
         };
-        GameKernel gk = new GameKernel.Builder(gi, 60, 60)
+        GameKernel gk = new GameKernel.Builder(gi, FPS, UPS)
                 .initListener()
                 .enableMouseTrack((e, state, trigTime) -> {
                     if (state == CommandSolver.MouseState.DRAGGED) {
@@ -56,8 +58,8 @@ public class GameFrame extends JFrame {
                                 // exchange two ball
                                 int tmpx = HitBall.x;
                                 int tmpy = HitBall.y;
-                                int indexControlBall = ControlBall.y / 100 * 5 + ControlBall.x / 100;
-                                int indexHotBall = HitBall.y / 100 * 5 + HitBall.x / 100;
+                                int indexControlBall = ControlBall.y / BALLHEIGHT * BALLPLATEWIDTH + ControlBall.x / BALLWIDTH;
+                                int indexHotBall = HitBall.y / BALLHEIGHT * BALLPLATEWIDTH + HitBall.x / BALLWIDTH;
                                 HitBall.x = ControlBall.x;
                                 HitBall.y = ControlBall.y;
                                 ControlBall.x = tmpx;
@@ -87,7 +89,7 @@ public class GameFrame extends JFrame {
         int x = e.x;
         int y = e.y;
         for (Ball ball : balls) {
-            if (x >= ball.x && x < ball.x + 100 && y >= ball.y && y < ball.y + 100) return ball;
+            if (x >= ball.x && x < ball.x + BALLWIDTH && y >= ball.y && y < ball.y + BALLHEIGHT) return ball;
         }
         return null;
     }
