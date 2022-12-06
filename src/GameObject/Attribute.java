@@ -1,3 +1,5 @@
+package GameObject;
+
 public enum Attribute {
     LIGHT,
     DARK,

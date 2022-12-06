@@ -1,3 +1,7 @@
+package BallPanel;
+
+import GameObject.Attribute;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -55,7 +59,7 @@ public class BallPlatePanel extends JPanel implements ActionListener {
     }
 
     public void reInit() {
-        this.removeAll(); // remove all component on BallPlatePanel
+        this.removeAll(); // remove all component on BallPanel.BallPlatePanel
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 5; j++) {
                 GridBagConstraints tmpConstrains = new GridBagConstraints(); // setting gridBagLayout
@@ -115,7 +119,7 @@ public class BallPlatePanel extends JPanel implements ActionListener {
                 balls.set(((Ball) control).y * 5 + ((Ball) control).x, second);
                 balls.set(exchangeBallY * 5 + exchangeBallX, control);
 
-                // reInit BallPlatePanel ( resetting ball position )
+                // reInit BallPanel.BallPlatePanel ( resetting ball position )
                 reInit();
 
                 exchangeBallX = -1;
