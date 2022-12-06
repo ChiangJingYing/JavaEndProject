@@ -1,7 +1,6 @@
-package BallPanel;
+package GameObject;
 
 import GameKernel.utils.controllers.ImageController;
-import GameObject.Attribute;
 
 import java.awt.*;
 
