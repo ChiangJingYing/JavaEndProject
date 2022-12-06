@@ -37,7 +37,7 @@ public class BallPlatePanel extends JPanel implements ActionListener {
     }
 
     // Move ball Entrance
-    public void allowMove(){
+    public void allowMove() {
         timer.start();
     }
 
@@ -106,12 +106,12 @@ public class BallPlatePanel extends JPanel implements ActionListener {
         public void mouseDragged(MouseEvent e) {
             if (control == null) {
                 // find which ball is control.
-                control = (JPanel) (e.getComponent().getComponentAt(e.getX(), e.getY()));
-            } else if (exchangeBallX == -1 && ((Ball) (e.getComponent().getComponentAt(e.getX(), e.getY()))).x != ((Ball) control).x ||
-                    ((Ball) (e.getComponent().getComponentAt(e.getX(), e.getY()))).y != ((Ball) control).y) {
+                control = (JPanel) (e.getComponent().getComponentAt(e.getPoint()));
+            } else if (exchangeBallX == -1 && ((Ball) (e.getComponent().getComponentAt(e.getPoint()))).x != ((Ball) control).x ||
+                    ((Ball) (e.getComponent().getComponentAt(e.getPoint()))).y != ((Ball) control).y) {
                 // find which ball will be exchange.
-                exchangeBallX = ((Ball) (e.getComponent().getComponentAt(e.getX(), e.getY()))).x;
-                exchangeBallY = ((Ball) (e.getComponent().getComponentAt(e.getX(), e.getY()))).y;
+                exchangeBallX = ((Ball) (e.getComponent().getComponentAt(e.getPoint()))).x;
+                exchangeBallY = ((Ball) (e.getComponent().getComponentAt(e.getPoint()))).y;
 
 
                 JPanel second = balls.get(exchangeBallY * 5 + exchangeBallX);
