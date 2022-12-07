@@ -21,9 +21,9 @@ public class GameScene extends Scene {
         random = new Random();
         balls = new ArrayList<>();
         // init Balls
-        for (int i = 0; i < BALLPLATEHEIGHT; i++) {
-            for (int j = 0; j < BALLPLATEWIDTH; j++) {
-                balls.add(new Ball(j * BALLWIDTH, i * BALLHEIGHT, Attribute.values()[random.nextInt(6)]));
+        for (int i = 0; i < BALLPLATE_HEIGHT; i++) {
+            for (int j = 0; j < BALLPLATE_WIDTH; j++) {
+                balls.add(new Ball(j * BALL_WIDTH, i * BALL_HEIGHT, Attribute.values()[random.nextInt(6)]));
             }
         }
     }
@@ -37,7 +37,8 @@ public class GameScene extends Scene {
     public void paint(Graphics g) {
         // draw BallPlate
         for (Ball ball : balls) {
-            g.drawImage(ball.image, ball.x, ball.y, 100, 100, null);
+            g.drawImage(ball.image, ball.x, ball.y,
+                    100, 100, null);
         }
     }
 
@@ -59,8 +60,8 @@ public class GameScene extends Scene {
                         // exchange two ball
                         int tmpx = HitBall.x;
                         int tmpy = HitBall.y;
-                        int indexControlBall = ControlBall.y / BALLHEIGHT * BALLPLATEWIDTH + ControlBall.x / BALLWIDTH;
-                        int indexHotBall = HitBall.y / BALLHEIGHT * BALLPLATEWIDTH + HitBall.x / BALLWIDTH;
+                        int indexControlBall = ControlBall.y / BALL_HEIGHT * BALLPLATE_WIDTH + ControlBall.x / BALL_WIDTH;
+                        int indexHotBall = HitBall.y / BALL_HEIGHT * BALLPLATE_WIDTH + HitBall.x / BALL_WIDTH;
                         HitBall.x = ControlBall.x;
                         HitBall.y = ControlBall.y;
                         ControlBall.x = tmpx;
@@ -87,7 +88,7 @@ public class GameScene extends Scene {
         int x = e.x;
         int y = e.y;
         for (Ball ball : balls) {
-            if (x >= ball.x && x < ball.x + BALLWIDTH && y >= ball.y && y < ball.y + BALLHEIGHT) return ball;
+            if (x >= ball.x && x < ball.x + BALL_WIDTH && y >= ball.y && y < ball.y + BALL_HEIGHT) return ball;
         }
         return null;
     }
