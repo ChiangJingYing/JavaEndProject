@@ -7,6 +7,7 @@ import GameObject.Ball;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 import static GameObject.GlobalParameter.*;
@@ -24,7 +25,7 @@ public class GameScene extends Scene {
         for (int i = 0; i < BALLPLATE_HEIGHT; i++) {
             balls.add(new ArrayList<>());
             for (int j = 0; j < BALLPLATE_WIDTH; j++) {
-                balls.get(i).add(new Ball(j * BALL_WIDTH + SCREEN_WIDTH / 4, i * BALL_HEIGHT +(int)(SCREEN_WIDTH * 0.3),
+                balls.get(i).add(new Ball(j * BALL_WIDTH + SCREEN_WIDTH / 4, i * BALL_HEIGHT + (int) (SCREEN_WIDTH * 0.3),
                         j, i, Attribute.values()[random.nextInt(6)]));
             }
         }
@@ -69,8 +70,9 @@ public class GameScene extends Scene {
             }
             if (state == CommandSolver.MouseState.RELEASED) {
                 ControlBall = null;
-                int tmp = EliminateBall();
-                System.out.println("Combo: " + tmp);
+                int[] eliminateBalls = EliminateBall();
+                for (int i = 0; i < 6; i++)
+                    System.out.println(Arrays.asList(Attribute.values()).get(i) + ": " + eliminateBalls[i]);
             }
         };
     }
@@ -93,7 +95,8 @@ public class GameScene extends Scene {
     }
 
     // 消珠 return -1 if not eliminate any ball
-    private int EliminateBall() {
+    private int[] EliminateBall() {
+        int[] eliminateBalls = new int[13]; // first six normal ball, next six string ball, final Combo
         int countCombo = -1;
         // vertical
         for (int i = 0; i < balls.get(0).size(); i++) {
@@ -107,6 +110,8 @@ public class GameScene extends Scene {
                     if (sames.size() >= 3) {
                         countCombo += 1;
                         for (Ball same : sames) {
+                            // TODO count strong ball
+                            eliminateBalls[same.attribute.ordinal()] += 1;
                             balls.get(same.indexY).set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
                         }
                     }
@@ -118,6 +123,7 @@ public class GameScene extends Scene {
                             sames.add(balls.get(j + 1).get(i));
                         countCombo += 1;
                         for (Ball same : sames) {
+                            eliminateBalls[same.attribute.ordinal()] += 1;
                             balls.get(same.indexY).set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
                         }
                     }
@@ -138,6 +144,7 @@ public class GameScene extends Scene {
                     if (sames.size() >= 3) {
                         countCombo += 1;
                         for (Ball same : sames) {
+                            eliminateBalls[same.attribute.ordinal()] += 1;
                             list.set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
                         }
                     }
@@ -150,6 +157,7 @@ public class GameScene extends Scene {
                             sames.add(list.get(i + 1));
                         countCombo += 1;
                         for (Ball same : sames) {
+                            eliminateBalls[same.attribute.ordinal()] += 1;
                             list.set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
                         }
                     }
@@ -157,7 +165,8 @@ public class GameScene extends Scene {
             }
         }
 
-        return (countCombo == -1) ? -1 : countCombo + 1;
+        eliminateBalls[12] = (countCombo == -1) ? -1 : countCombo + 1;
+        return eliminateBalls;
     }
 
     @Override
