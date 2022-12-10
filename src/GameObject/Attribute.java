@@ -6,6 +6,7 @@ public enum Attribute {
     WATER,
     TREE,
     FIRE,
-    HEART
+    HEART,
+    None
 }
 

@@ -81,28 +81,71 @@ public class GameScene extends Scene {
             }
             if (state == CommandSolver.MouseState.RELEASED) {
                 ControlBall = null;
-                for (ArrayList<Ball> list : balls) {
-                    int same = 0;
-                    for (int i = 0; i < list.size() - 1; i++) {
-                        if (list.get(i).attribute == list.get(i + 1).attribute) same += 1;
-                        else {
-                            // Not same
-                            if (same >= 2) {
-                                for (int j = 0; j < same + 1; j++) list.remove(i - j);
-                                same = 0;
-                            }
+
+                EliminateBall();
+            }
+        };
+    }
+
+    // 消珠
+    private void EliminateBall() {
+        // vertical
+        for (int i = 0; i < balls.get(0).size(); i++) {
+            ArrayList<Ball> sames = new ArrayList<>();
+            for (int j = 0; j < balls.size() - 1; j++) {
+                sames.add(balls.get(j).get(i));
+                if (balls.get(j).get(i).attribute == balls.get(j + 1).get(i).attribute) {
+                    if (sames.contains(balls.get(j + 1).get(i)))
+                        sames.add(balls.get(j + 1).get(i));
+                } else {
+                    if (sames.size() >= 3) {
+                        for (Ball same : sames) {
+                            balls.get(same.indexY).set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
                         }
-                        // Hit wall
-                        if (i + 1 == list.size() - 1) {
-                            if (same >= 2) {
-                                for (int j = 0; j < same + 1; j++) list.remove(i + 1 - j);
-                                same = 0;
-                            }
+                    }
+                    sames.clear();
+                }
+                if (j + 1 == balls.size() - 1) {
+                    if (sames.size() >= 2) {
+                        if (balls.get(j + 1).get(i).attribute == sames.get(0).attribute)
+                            sames.add(balls.get(j + 1).get(i));
+                        for (Ball same : sames) {
+                            balls.get(same.indexY).set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
                         }
                     }
                 }
             }
-        };
+        }
+
+        // Horizontal
+        for (ArrayList<Ball> list : balls) {
+            ArrayList<Ball> sames = new ArrayList<>();
+            for (int i = 0; i < list.size() - 1; i++) {
+                sames.add(list.get(i));
+                if (list.get(i).attribute == list.get(i + 1).attribute && sames.get(0).attribute != Attribute.None) {
+                    if (sames.contains(list.get(i + 1)))
+                        sames.add(list.get(i + 1));
+                } else {
+                    // Not same
+                    if (sames.size() >= 3) {
+                        for (Ball same : sames) {
+                            list.set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
+                        }
+                    }
+                    sames.clear();
+                }
+                // Hit wall
+                if (i + 1 == list.size() - 1) {
+                    if (sames.size() >= 2) {
+                        if (list.get(i + 1).attribute == sames.get(0).attribute && sames.get(0).attribute != Attribute.None)
+                            sames.add(list.get(i + 1));
+                        for (Ball same : sames) {
+                            list.set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
