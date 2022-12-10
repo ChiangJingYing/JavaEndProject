@@ -9,8 +9,6 @@ import static GameObject.GlobalParameter.FPS;
 import static GameObject.GlobalParameter.UPS;
 
 public class GameFrame extends JFrame {
-
-
     public GameFrame(String title, int width, int height) {
         super(title);
 
