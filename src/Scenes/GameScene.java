@@ -17,9 +17,10 @@ public class GameScene extends Scene {
     ArrayList<ArrayList<Ball>> balls;
     Ball ControlBall;
     Random random;
-    int turnTime = 15;
-    Timer turnBallTimer;
-    boolean canTurning = true;
+    int turnTime = 3; // 轉珠時長
+    int turnTimeCountDown = -1; // 倒數
+    Timer turnBallTimer; // 計時物件
+    boolean canTurning = true; // 轉珠開關
 
     @Override
     public void sceneBegin() {
@@ -29,7 +30,7 @@ public class GameScene extends Scene {
         for (int i = 0; i < BALLPLATE_HEIGHT; i++) {
             balls.add(new ArrayList<>());
             for (int j = 0; j < BALLPLATE_WIDTH; j++) {
-                balls.get(i).add(new Ball(j * BALL_WIDTH + SCREEN_WIDTH / 4, i * BALL_HEIGHT +(int)(SCREEN_WIDTH * 0.3),
+                balls.get(i).add(new Ball(j * BALL_WIDTH + SCREEN_WIDTH / 4, i * BALL_HEIGHT + (int) (SCREEN_WIDTH * 0.3),
                         j, i, Attribute.values()[random.nextInt(6)]));
             }
         }
@@ -42,6 +43,9 @@ public class GameScene extends Scene {
 
     @Override
     public void paint(Graphics g) {
+        g.setColor(Color.white);
+        g.setFont(new Font("標楷體", Font.PLAIN, 24));
+        g.drawString(Integer.toString(turnTimeCountDown), 10, 50);
         // draw BallPlate
         for (ArrayList<Ball> list : balls) {
             for (Ball ball : list) {
@@ -63,21 +67,26 @@ public class GameScene extends Scene {
                 Ball HitBall = checkMouseOnBall(e.getPoint());
                 if (HitBall != null) {
                     // 轉珠時間計時
-                    turnBallTimer = new Timer();
-                    turnBallTimer.scheduleAtFixedRate(new TimerTask() {
-                        @Override
-                        public void run() {
-                            turnTime -= 1;
-                            if (turnTime == -1) {
-                                canTurning = false;
-                                turnBallTimer.cancel();
+                    if (turnTimeCountDown == -1) {
+                        turnBallTimer = new Timer();
+                        turnTimeCountDown = turnTime;
+                    }
+                    if (turnTimeCountDown == turnTime) {
+                        turnBallTimer.scheduleAtFixedRate(new TimerTask() {
+                            @Override
+                            public void run() {
+                                turnTimeCountDown -= 1;
+                                if (turnTimeCountDown == -1) {
+                                    canTurning = false;
+                                    turnBallTimer.cancel();
+                                }
                             }
-                        }
-                    }, 0, 1000);
+                        }, 0, 1000);
+                    }
                     // 移動的珠
                     if (ControlBall == null) {
                         ControlBall = HitBall;
-                    // 被交換的珠
+                        // 被交換的珠
                     } else if (HitBall != ControlBall) {
                         // 交換兩珠子
                         exchangeBall(ControlBall, HitBall);
@@ -86,20 +95,22 @@ public class GameScene extends Scene {
                 }
             }
             if (!canTurning || state == CommandSolver.MouseState.RELEASED) {
+                // 回復成可以轉珠
+                if(state == CommandSolver.MouseState.RELEASED) {
+                    canTurning = true;
+                    turnTimeCountDown = -1;
+                    turnBallTimer.cancel();
+                }
                 ControlBall = null;
                 int tmp = EliminateBall();
                 System.out.println("Combo: " + tmp);
-
-                // 回復成可以轉珠
-                turnTime = 15;
-                canTurning = true;
             }
         };
     }
 
     /**
      * 交換兩顆珠子
-     * @param firstBall 第一顆要交換的珠子
+     * @param firstBall  第一顆要交換的珠子
      * @param secondBall 第二顆要交換的珠子
      */
     private void exchangeBall(Ball firstBall, Ball secondBall) {
@@ -123,8 +134,7 @@ public class GameScene extends Scene {
      * 消除水平、垂直三顆以上相同屬性的珠子
      * 回傳每種屬性（包含強化珠）消除個數
      *
-      * @return
-     * eliminateBall: 前六個為個屬一般珠 後六為個屬強化珠 最後為Combo數，若無為-1
+     * @return eliminateBall: 前六個為個屬一般珠 後六為個屬強化珠 最後為Combo數，若無為-1
      */
     private int EliminateBall() {
         int countCombo = -1;
