@@ -1,11 +1,9 @@
-import GameObject.Attribute;
-import GameObject.Skill;
+package GameObject;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 public class Enemy {
-    BufferedImage enemyImage;
+    public Image enemyImage;
     Attribute attribute;
     public int attackCountDown;
     int attackPower;
@@ -15,11 +13,11 @@ public class Enemy {
     boolean haveSkill;
     Skill skill;
 
-    int x;
-    int y;
+    public int x;
+    public int y;
 
 
-    public Enemy(BufferedImage enemyImage, Attribute attribute,
+    public Enemy(Image enemyImage, Attribute attribute,
                  int attackCountDown, int attackPower, int defencePower,
                  int healthValue, int x, int y, Skill skill) {
         this.enemyImage = enemyImage;
@@ -35,7 +33,7 @@ public class Enemy {
         this.haveSkill = true;
     }
 
-    public Enemy(BufferedImage enemyImage, Attribute attribute,
+    public Enemy(Image enemyImage, Attribute attribute,
                  int attackCountDown, int attackPower, int defencePower,
                  int healthValue, int x, int y) {
         this.enemyImage = enemyImage;
@@ -48,10 +46,6 @@ public class Enemy {
         this.y = y;
 
         this.haveSkill = false;
-    }
-
-    public void paint(Graphics g) {
-        g.drawImage(enemyImage, x, y, null);
     }
 
     public void beAttacked(int damage) {
