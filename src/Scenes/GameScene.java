@@ -21,8 +21,9 @@ public class GameScene extends Scene {
     int turnTimeCountDown = -1; // 倒數
     Timer turnBallTimer; // 計時物件
     boolean canTurning = true; // 轉珠開關
-    int numLevel = 3;
-    int nowLevel = 0;
+    int numLevel = 3; // 關卡數量
+    int nowLevel = 0; // 目前在第幾關
+    int[] eliminateBalls = new int[1];
 
     @Override
     public void sceneBegin() {
@@ -75,7 +76,16 @@ public class GameScene extends Scene {
 
     @Override
     public void update() {
-
+        if (eliminateBalls.length == 13 && eliminateBalls[12] != -1) {
+            for (int i = 0; i < BALLPLATE_WIDTH; i++) {
+                for (int j = 0; j < BALLPLATE_HEIGHT; j++) {
+                    if (balls.get(j).get(i).attribute == Attribute.None) {
+                        Ball tmp = balls.get(j).get(i);
+                        balls.get(j).set(i, new Ball(tmp.x, tmp.y, tmp.indexX, tmp.indexY, Attribute.values()[random.nextInt(6)]));
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -121,7 +131,7 @@ public class GameScene extends Scene {
                     turnBallTimer.cancel();
                 }
                 ControlBall = null;
-                int[] eliminateBalls = EliminateBall();
+                eliminateBalls = EliminateBall();
                 if (eliminateBalls[12] != -1) {
                     for (int i = 0; i < 6; i++)
                         System.out.println(Arrays.asList(Attribute.values()).get(i) + ": " + eliminateBalls[i]);
