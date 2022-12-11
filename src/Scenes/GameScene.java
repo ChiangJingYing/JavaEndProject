@@ -8,6 +8,8 @@ import GameObject.Ball;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static GameObject.GlobalParameter.*;
 
@@ -15,6 +17,9 @@ public class GameScene extends Scene {
     ArrayList<ArrayList<Ball>> balls;
     Ball ControlBall;
     Random random;
+    int turnTime = 15;
+    Timer turnBallTimer;
+    boolean canTurning = true;
 
     @Override
     public void sceneBegin() {
@@ -54,27 +59,49 @@ public class GameScene extends Scene {
     @Override
     public CommandSolver.MouseCommandListener mouseListener() {
         return (e, state, trigTime) -> {
-            if (state == CommandSolver.MouseState.DRAGGED) {
+            if (state == CommandSolver.MouseState.DRAGGED && canTurning) {
                 Ball HitBall = checkMouseOnBall(e.getPoint());
-                // get control ball
                 if (HitBall != null) {
+                    // 轉珠時間計時
+                    turnBallTimer = new Timer();
+                    turnBallTimer.scheduleAtFixedRate(new TimerTask() {
+                        @Override
+                        public void run() {
+                            turnTime -= 1;
+                            if (turnTime == -1) {
+                                canTurning = false;
+                                turnBallTimer.cancel();
+                            }
+                        }
+                    }, 0, 1000);
+                    // 移動的珠
                     if (ControlBall == null) {
                         ControlBall = HitBall;
+                    // 被交換的珠
                     } else if (HitBall != ControlBall) {
-                        // exchange two ball
+                        // 交換兩珠子
                         exchangeBall(ControlBall, HitBall);
                         ControlBall = null;
                     }
                 }
             }
-            if (state == CommandSolver.MouseState.RELEASED) {
+            if (!canTurning || state == CommandSolver.MouseState.RELEASED) {
                 ControlBall = null;
                 int tmp = EliminateBall();
                 System.out.println("Combo: " + tmp);
+
+                // 回復成可以轉珠
+                turnTime = 15;
+                canTurning = true;
             }
         };
     }
 
+    /**
+     * 交換兩顆珠子
+     * @param firstBall 第一顆要交換的珠子
+     * @param secondBall 第二顆要交換的珠子
+     */
     private void exchangeBall(Ball firstBall, Ball secondBall) {
         int[] tmpPosition = {secondBall.y, secondBall.x};
         int[] indexFirstBall = {firstBall.indexY, firstBall.indexX};
@@ -92,7 +119,13 @@ public class GameScene extends Scene {
         balls.get(indexSecondBall[0]).set(indexSecondBall[1], firstBall);
     }
 
-    // 消珠 return -1 if not eliminate any ball
+    /**
+     * 消除水平、垂直三顆以上相同屬性的珠子
+     * 回傳每種屬性（包含強化珠）消除個數
+     *
+      * @return
+     * eliminateBall: 前六個為個屬一般珠 後六為個屬強化珠 最後為Combo數，若無為-1
+     */
     private int EliminateBall() {
         int countCombo = -1;
         // vertical
