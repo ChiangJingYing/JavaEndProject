@@ -1,9 +1,11 @@
 package Scenes;
 
+import GameKernel.utils.controllers.ImageController;
 import GameKernel.utils.core.CommandSolver;
 import GameKernel.utils.core.Scene;
 import GameObject.Attribute;
 import GameObject.Ball;
+import GameObject.Enemy;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -13,19 +15,34 @@ import static GameObject.GlobalParameter.*;
 
 public class GameScene extends Scene {
     ArrayList<ArrayList<Ball>> balls;
+    ArrayList<ArrayList<Enemy>> enemies;
     Ball ControlBall;
     Random random;
+    int numLevel = 3;
+    int nowLevel = 0;
 
     @Override
     public void sceneBegin() {
         random = new Random();
         balls = new ArrayList<>();
+        enemies = new ArrayList();
+
         // init Balls
         for (int i = 0; i < BALLPLATE_HEIGHT; i++) {
             balls.add(new ArrayList<>());
             for (int j = 0; j < BALLPLATE_WIDTH; j++) {
-                balls.get(i).add(new Ball(j * BALL_WIDTH + SCREEN_WIDTH / 4, i * BALL_HEIGHT +(int)(SCREEN_WIDTH * 0.3),
+                balls.get(i).add(new Ball(j * BALL_WIDTH + SCREEN_WIDTH / 4, i * BALL_HEIGHT + (int) (SCREEN_WIDTH * 0.3),
                         j, i, Attribute.values()[random.nextInt(6)]));
+            }
+        }
+
+        // init enemies
+        for (int i = 0; i < numLevel; i++) {
+            enemies.add(new ArrayList<>());
+            for (int j = 0; j < 3; j++) {
+                enemies.get(i).add(new Enemy(ImageController.instance().tryGetImage("../../../Image/Balls/None.png"),
+                        Attribute.None, 1, 1, 1, 1,
+                        j * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
             }
         }
     }
@@ -41,8 +58,12 @@ public class GameScene extends Scene {
         for (ArrayList<Ball> list : balls) {
             for (Ball ball : list) {
                 g.drawImage(ball.image, ball.x, ball.y,
-                        100, 100, null);
+                        BALL_WIDTH, BALL_HEIGHT, null);
             }
+        }
+        // draw enemies
+        for (Enemy enemy : enemies.get(nowLevel)) {
+            g.drawImage(enemy.enemyImage, enemy.x, enemy.y, 100, 100, null);
         }
     }
 
