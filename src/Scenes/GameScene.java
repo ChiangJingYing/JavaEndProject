@@ -77,13 +77,12 @@ public class GameScene extends Scene {
     @Override
     public void update() {
         // 消珠 ＆ 天降
-        if (!canTurning) {
+        if (!canTurning /*轉珠結束*/) {
             eliminateBalls = EliminateBall();
             if (eliminateBalls[12] != -1) {
                 for (int i = 0; i < 6; i++)
                     System.out.println(Arrays.asList(Attribute.values()).get(i) + ": " + eliminateBalls[i]);
             }
-            eliminateBalls = null;
             Timer tmp = new Timer();
             tmp.scheduleAtFixedRate(
                     new TimerTask() {
@@ -93,14 +92,7 @@ public class GameScene extends Scene {
                         public void run() {
                             // 消珠-補珠間delay
                             if (countDown == 3) {
-                                for (int i = 0; i < BALLPLATE_WIDTH; i++) {
-                                    for (int j = 0; j < BALLPLATE_HEIGHT; j++) {
-                                        if (balls.get(j).get(i).attribute == Attribute.None) {
-                                            Ball tmp = balls.get(j).get(i);
-                                            balls.get(j).set(i, new Ball(tmp.x, tmp.y, tmp.indexX, tmp.indexY, Attribute.values()[random.nextInt(6)]));
-                                        }
-                                    }
-                                }
+                                ReplenishBall();
                                 // 補珠-可以轉珠delay
                             } else if (countDown == 1) {
                                 canTurning = true;
@@ -112,6 +104,7 @@ public class GameScene extends Scene {
                     0, 500);
         }
     }
+
 
     @Override
     public CommandSolver.MouseCommandListener mouseListener() {
@@ -158,6 +151,11 @@ public class GameScene extends Scene {
                 ControlBall = null;
             }
         };
+    }
+
+    @Override
+    public CommandSolver.KeyListener keyListener() {
+        return null;
     }
 
     /**
@@ -263,10 +261,17 @@ public class GameScene extends Scene {
         return eliminateBalls;
     }
 
-    @Override
-    public CommandSolver.KeyListener keyListener() {
-        return null;
+    private void ReplenishBall() {
+        for (int i = 0; i < BALLPLATE_WIDTH; i++) {
+            for (int j = 0; j < BALLPLATE_HEIGHT; j++) {
+                if (balls.get(j).get(i).attribute == Attribute.None) {
+                    Ball tmp = balls.get(j).get(i);
+                    balls.get(j).set(i, new Ball(tmp.x, tmp.y, tmp.indexX, tmp.indexY, Attribute.values()[random.nextInt(6)]));
+                }
+            }
+        }
     }
+
 
     public Ball checkMouseOnBall(Point e) {
         int x = e.x;
