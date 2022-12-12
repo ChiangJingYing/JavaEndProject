@@ -69,7 +69,7 @@ public class GameScene extends Scene {
         }
         // draw enemies
         for (Enemy enemy : enemies.get(nowLevel)) {
-            g.drawImage(enemy.enemyImage, enemy.x, enemy.y, 100, 100, null);
+            g.drawImage(enemy.enemyImage, enemy.x, enemy.y, 110, 100, null);
         }
     }
 
