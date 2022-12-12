@@ -9,6 +9,9 @@ import GameObject.Enemy;
 
 import java.awt.*;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static GameObject.GlobalParameter.*;
 
@@ -19,7 +22,9 @@ public class GameScene extends Scene {
     Random random;
     int turnTime = 3; // 轉珠時長
     int turnTimeCountDown = -1; // 倒數
+    ScheduledExecutorService turnBallCountDown;
     Timer turnBallTimer; // 計時物件
+    ScheduledExecutorService eliminateDelay;
     boolean canTurning = true; // 轉珠開關
     int numLevel = 3; // 關卡數量
     int nowLevel = 0; // 目前在第幾關
@@ -78,30 +83,32 @@ public class GameScene extends Scene {
     public void update() {
         // 消珠 ＆ 天降
         if (!canTurning /*轉珠結束*/) {
-            eliminateBalls = EliminateBall();
-            if (eliminateBalls[12] != -1) {
+            if (eliminateDelay == null || eliminateDelay.isShutdown())
+                eliminateBalls = EliminateBall();
+            if (eliminateBalls != null &&  eliminateBalls[12] != -1) {
                 for (int i = 0; i < 6; i++)
                     System.out.println(Arrays.asList(Attribute.values()).get(i) + ": " + eliminateBalls[i]);
-            }
-            Timer tmp = new Timer();
-            tmp.scheduleAtFixedRate(
-                    new TimerTask() {
-                        int countDown = 6;
 
-                        @Override
-                        public void run() {
-                            // 消珠-補珠間delay
-                            if (countDown == 3) {
-                                ReplenishBall();
-                                // 補珠-可以轉珠delay
-                            } else if (countDown == 1) {
-                                canTurning = true;
-                                tmp.cancel();
-                            }
-                            countDown -= 1;
+                eliminateBalls = null;
+                eliminateDelay = Executors.newSingleThreadScheduledExecutor();
+                Runnable tack = new TimerTask() {
+                    int countDown = 6;
+
+                    @Override
+                    public void run() {
+                        System.out.println(countDown);
+                        if (countDown == 3) {
+                            ReplenishBall();
+                            // 補珠-可以轉珠delay
+                        } else if (countDown == 1) {
+                            canTurning = true;
+                            eliminateDelay.shutdown();
                         }
-                    },
-                    0, 500);
+                        countDown -= 1;
+                    }
+                };
+                eliminateDelay.scheduleAtFixedRate(tack, 0, 500, TimeUnit.MILLISECONDS);
+            }else if(eliminateBalls != null && eliminateBalls[12] == -1) canTurning = true;
         }
     }
 
