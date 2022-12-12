@@ -76,15 +76,40 @@ public class GameScene extends Scene {
 
     @Override
     public void update() {
-        if (eliminateBalls.length == 13 && eliminateBalls[12] != -1) {
-            for (int i = 0; i < BALLPLATE_WIDTH; i++) {
-                for (int j = 0; j < BALLPLATE_HEIGHT; j++) {
-                    if (balls.get(j).get(i).attribute == Attribute.None) {
-                        Ball tmp = balls.get(j).get(i);
-                        balls.get(j).set(i, new Ball(tmp.x, tmp.y, tmp.indexX, tmp.indexY, Attribute.values()[random.nextInt(6)]));
-                    }
-                }
+        // 消珠 ＆ 天降
+        if (!canTurning) {
+            eliminateBalls = EliminateBall();
+            if (eliminateBalls[12] != -1) {
+                for (int i = 0; i < 6; i++)
+                    System.out.println(Arrays.asList(Attribute.values()).get(i) + ": " + eliminateBalls[i]);
             }
+            eliminateBalls = null;
+            Timer tmp = new Timer();
+            tmp.scheduleAtFixedRate(
+                    new TimerTask() {
+                        int countDown = 6;
+
+                        @Override
+                        public void run() {
+                            // 消珠-補珠間delay
+                            if (countDown == 3) {
+                                for (int i = 0; i < BALLPLATE_WIDTH; i++) {
+                                    for (int j = 0; j < BALLPLATE_HEIGHT; j++) {
+                                        if (balls.get(j).get(i).attribute == Attribute.None) {
+                                            Ball tmp = balls.get(j).get(i);
+                                            balls.get(j).set(i, new Ball(tmp.x, tmp.y, tmp.indexX, tmp.indexY, Attribute.values()[random.nextInt(6)]));
+                                        }
+                                    }
+                                }
+                                // 補珠-可以轉珠delay
+                            } else if (countDown == 1) {
+                                canTurning = true;
+                                tmp.cancel();
+                            }
+                            countDown -= 1;
+                        }
+                    },
+                    0, 500);
         }
     }
 
@@ -126,16 +151,11 @@ public class GameScene extends Scene {
             if (!canTurning || state == CommandSolver.MouseState.RELEASED) {
                 // 回復成可以轉珠
                 if (state == CommandSolver.MouseState.RELEASED) {
-                    canTurning = true;
+                    canTurning = false;
                     turnTimeCountDown = -1;
                     turnBallTimer.cancel();
                 }
                 ControlBall = null;
-                eliminateBalls = EliminateBall();
-                if (eliminateBalls[12] != -1) {
-                    for (int i = 0; i < 6; i++)
-                        System.out.println(Arrays.asList(Attribute.values()).get(i) + ": " + eliminateBalls[i]);
-                }
             }
         };
     }
