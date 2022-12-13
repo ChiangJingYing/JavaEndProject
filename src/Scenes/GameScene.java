@@ -1,5 +1,6 @@
 package Scenes;
 
+import GameKernel.utils.controllers.AudioResourceController;
 import GameKernel.utils.controllers.ImageController;
 import GameKernel.utils.core.CommandSolver;
 import GameKernel.utils.core.Scene;
@@ -48,6 +49,7 @@ public class GameScene extends Scene {
                         j * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
             }
         }
+        AudioResourceController.getInstance().loop("../../../Audio/mainBGM.wav",Integer.MAX_VALUE);
     }
 
     @Override
