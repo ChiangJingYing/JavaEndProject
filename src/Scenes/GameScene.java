@@ -20,11 +20,11 @@ public class GameScene extends Scene {
     ArrayList<ArrayList<Enemy>> enemies;
     Ball ControlBall;
     Random random;
-    int turnTime = 3; // 轉珠時長
+    int turnTime = 10; // 轉珠時長
     int turnTimeCountDown = -1; // 倒數
-    ScheduledExecutorService turnBallCountDown;
     Timer turnBallTimer; // 計時物件
     ScheduledExecutorService eliminateDelay;
+    ScheduledExecutorService skyFallDelay;
     boolean canTurning = true; // 轉珠開關
     int numLevel = 3; // 關卡數量
     int nowLevel = 0; // 目前在第幾關
@@ -58,7 +58,6 @@ public class GameScene extends Scene {
 
     @Override
     public void sceneEnd() {
-
     }
 
     @Override
@@ -85,30 +84,76 @@ public class GameScene extends Scene {
         if (!canTurning /*轉珠結束*/) {
             if (eliminateDelay == null || eliminateDelay.isShutdown())
                 eliminateBalls = EliminateBall();
-            if (eliminateBalls != null &&  eliminateBalls[12] != -1) {
+            if (eliminateBalls != null && eliminateBalls[12] != -1) {
                 for (int i = 0; i < 6; i++)
                     System.out.println(Arrays.asList(Attribute.values()).get(i) + ": " + eliminateBalls[i]);
 
-                eliminateBalls = null;
-                eliminateDelay = Executors.newSingleThreadScheduledExecutor();
-                Runnable tack = new TimerTask() {
-                    int countDown = 6;
+                if (skyFallDelay == null) {
+                    skyFallDelay = Executors.newSingleThreadScheduledExecutor();
+                    skyFallDelay.scheduleAtFixedRate(new TimerTask() {
+                        @Override
+                        public void run() {
+                            boolean isFallen = false;
+                            System.out.println("falling");
+                            for (int i = 0; i < BALLPLATE_WIDTH; i++) {
+                                boolean findNone = false;
+                                for (int j = BALLPLATE_HEIGHT - 1; j >= 0; j--) {
+                                    Ball tmp = balls.get(j).get(i);
+                                    if (tmp.attribute == Attribute.None) {
+                                        findNone = true;
+                                    }
+                                    if (tmp.attribute != Attribute.None && findNone) {
+                                        for (int k = j; k >= 0; k--) {
+                                            exchangeBall(tmp, balls.get(j + 1).get(i));
+                                            isFallen = true;
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!isFallen) {
+                                eliminateDelay = Executors.newSingleThreadScheduledExecutor();
+                                eliminateDelay.scheduleWithFixedDelay(new TimerTask() {
+                                    int countDown = 6;
 
-                    @Override
-                    public void run() {
-                        System.out.println(countDown);
-                        if (countDown == 3) {
-                            ReplenishBall();
-                            // 補珠-可以轉珠delay
-                        } else if (countDown == 1) {
-                            canTurning = true;
-                            eliminateDelay.shutdown();
+                                    @Override
+                                    public void run() {
+                                        if (countDown == 5) {
+                                            ReplenishBall();
+                                            // 補珠-可以轉珠delay
+                                        } else if (countDown == 1) {
+                                            canTurning = true;
+                                            skyFallDelay = null;
+                                            eliminateDelay.shutdown();
+                                        }
+                                        countDown -= 1;
+                                    }
+                                }, 0, 500, TimeUnit.MILLISECONDS);
+                                skyFallDelay.shutdown();
+                            }
                         }
-                        countDown -= 1;
-                    }
-                };
-                eliminateDelay.scheduleAtFixedRate(tack, 0, 500, TimeUnit.MILLISECONDS);
-            }else if(eliminateBalls != null && eliminateBalls[12] == -1) canTurning = true;
+                    }, 0, 300, TimeUnit.MILLISECONDS);
+                }
+//                eliminateDelay = Executors.newSingleThreadScheduledExecutor();
+//                eliminateDelay.scheduleAtFixedRate(new TimerTask() {
+//                    int countDown = 6;
+//
+//                    @Override
+//                    public void run() {
+//                        if (countDown == 3) {
+//                            ReplenishBall();
+//                            // 補珠-可以轉珠delay
+//                        } else if (countDown == 1) {
+//                            canTurning = true;
+//                            skyFallDelay = null;
+//                            eliminateDelay.shutdown();
+//                        }
+//                        countDown -= 1;
+//                    }
+//                }, 0, 500, TimeUnit.MILLISECONDS);
+
+                eliminateBalls = null;
+            } else if (eliminateBalls != null) canTurning = true;
         }
     }
 
@@ -268,6 +313,9 @@ public class GameScene extends Scene {
         return eliminateBalls;
     }
 
+    /**
+     * 將Attribute為None的珠子填充隨機屬性的正常珠子
+     */
     private void ReplenishBall() {
         for (int i = 0; i < BALLPLATE_WIDTH; i++) {
             for (int j = 0; j < BALLPLATE_HEIGHT; j++) {
@@ -279,7 +327,12 @@ public class GameScene extends Scene {
         }
     }
 
-
+    /**
+     * 檢查滑鼠位置在哪顆珠子上
+     *
+     * @param e 滑鼠的座標Point
+     * @return 回傳所在珠子，若無則回傳null
+     */
     public Ball checkMouseOnBall(Point e) {
         int x = e.x;
         int y = e.y;
