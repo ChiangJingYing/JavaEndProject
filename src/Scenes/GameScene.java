@@ -32,6 +32,10 @@ public class GameScene extends Scene {
     int nowLevel = 0; // 目前在第幾關
     int[] eliminateBalls = new int[1];
 
+    /**
+     * 畫面開始時執行
+     * 初始化轉珠盤、敵人、我方角色
+     */
     @Override
     public void sceneBegin() {
         random = new Random();
@@ -93,77 +97,84 @@ public class GameScene extends Scene {
                     System.out.println("\u001B[34m" + "Combo: " + eliminateBalls[12] + "\n--------------" + "\u001B[39m");
                 }
                 if (two == null) {
-                    CountDownLatch cd1 = new CountDownLatch(1);
-                    two = Executors.newSingleThreadScheduledExecutor();
-                    Runnable task1 = new TimerTask() {
-                        @Override
-                        public void run() {
-                            skyFallDelay = Executors.newSingleThreadScheduledExecutor();
-                            skyFallDelay.scheduleAtFixedRate(new TimerTask() {
-                                @Override
-                                public void run() {
-                                    System.out.println("falling");
-                                    boolean fallen = false;
-                                    for (int i = 0; i < BALLPLATE_WIDTH; i++) {
-                                        boolean findNone = false;
-                                        for (int j = BALLPLATE_HEIGHT - 1; j >= 0; j--) {
-                                            Ball tmp = balls.get(j).get(i);
-                                            if (tmp.attribute == Attribute.None) {
-                                                findNone = true;
-                                            }
-                                            if (tmp.attribute != Attribute.None && findNone) {
-                                                for (int k = j; k >= 0; k--) {
-                                                    fallen = true;
-                                                    tmp = balls.get(k).get(i);
-                                                    exchangeBall(tmp, balls.get(k + 1).get(i));
-                                                }
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    if (!fallen) {
-                                        System.out.println("天降結束");
-                                        cd1.countDown();
-                                        skyFallDelay.shutdown();
-                                    }
-                                }
-                            }, 0, 500, TimeUnit.MILLISECONDS);
-                        }
-                    };
-                    Runnable task2 = new TimerTask() {
-                        @Override
-                        public void run() {
-                            try {
-                                cd1.await();
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-                            System.out.println("補珠開始");
-                            eliminateDelay = Executors.newSingleThreadScheduledExecutor();
-                            eliminateDelay.scheduleWithFixedDelay(new TimerTask() {
-                                int countDown = 4;
-
-                                @Override
-                                public void run() {
-                                    if (countDown == 4) {
-                                        ReplenishBall();
-                                        // 補珠-可以轉珠delay
-                                    } else if (countDown == 1) {
-                                        canTurning = true;
-                                        eliminateDelay.shutdown();
-                                        two = null;
-                                    }
-                                    countDown -= 1;
-                                }
-                            }, 0, 500, TimeUnit.MILLISECONDS);
-                        }
-                    };
-                    two.schedule(task1, 0, TimeUnit.SECONDS);
-                    two.schedule(task2, 0, TimeUnit.SECONDS);
+                    runSkyFallAndComplement();
                 }
                 eliminateBalls = null;
             }
         }
+    }
+
+    /**
+     * 依序執行執行天將、補珠，不影響繪圖程序
+     */
+    private void runSkyFallAndComplement() {
+        CountDownLatch cd1 = new CountDownLatch(1);
+        two = Executors.newSingleThreadScheduledExecutor();
+        Runnable task1 = new TimerTask() {
+            @Override
+            public void run() {
+                skyFallDelay = Executors.newSingleThreadScheduledExecutor();
+                skyFallDelay.scheduleAtFixedRate(new TimerTask() {
+                    @Override
+                    public void run() {
+                        System.out.println("falling");
+                        boolean fallen = false;
+                        for (int i = 0; i < BALLPLATE_WIDTH; i++) {
+                            boolean findNone = false;
+                            for (int j = BALLPLATE_HEIGHT - 1; j >= 0; j--) {
+                                Ball tmp = balls.get(j).get(i);
+                                if (tmp.attribute == Attribute.None) {
+                                    findNone = true;
+                                }
+                                if (tmp.attribute != Attribute.None && findNone) {
+                                    for (int k = j; k >= 0; k--) {
+                                        fallen = true;
+                                        tmp = balls.get(k).get(i);
+                                        exchangeBall(tmp, balls.get(k + 1).get(i));
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        if (!fallen) {
+                            System.out.println("天降結束");
+                            cd1.countDown();
+                            skyFallDelay.shutdown();
+                        }
+                    }
+                }, 0, 500, TimeUnit.MILLISECONDS);
+            }
+        };
+        Runnable task2 = new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    cd1.await();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println("補珠開始");
+                eliminateDelay = Executors.newSingleThreadScheduledExecutor();
+                eliminateDelay.scheduleWithFixedDelay(new TimerTask() {
+                    int countDown = 4;
+
+                    @Override
+                    public void run() {
+                        if (countDown == 4) {
+                            ReplenishBall();
+                            // 補珠-可以轉珠delay
+                        } else if (countDown == 1) {
+                            canTurning = true;
+                            eliminateDelay.shutdown();
+                            two = null;
+                        }
+                        countDown -= 1;
+                    }
+                }, 0, 500, TimeUnit.MILLISECONDS);
+            }
+        };
+        two.schedule(task1, 0, TimeUnit.SECONDS);
+        two.schedule(task2, 0, TimeUnit.SECONDS);
     }
 
 
