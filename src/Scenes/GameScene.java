@@ -88,9 +88,9 @@ public class GameScene extends Scene {
     public void update() {
         // 消珠 ＆ 天降
         if (!canTurning /*轉珠結束*/) {
-            if (eliminateDelay == null || eliminateDelay.isShutdown())
+            if (two == null || two.isShutdown())
                 eliminateBalls = EliminateBall();
-            if (eliminateBalls != null) {
+            if ((two == null || two.isShutdown()) && eliminateBalls != null) {
                 if (eliminateBalls[12] != -1) {
                     for (int i = 0; i < 6; i++)
                         System.out.println("\u001B[34m" + Arrays.asList(Attribute.values()).get(i) + ": " + eliminateBalls[i] + "\u001B[39m");
@@ -123,9 +123,7 @@ public class GameScene extends Scene {
                             boolean findNone = false;
                             for (int j = BALLPLATE_HEIGHT - 1; j >= 0; j--) {
                                 Ball tmp = balls.get(j).get(i);
-                                if (tmp.attribute == Attribute.None) {
-                                    findNone = true;
-                                }
+                                if (tmp.attribute == Attribute.None) findNone = true;
                                 if (tmp.attribute != Attribute.None && findNone) {
                                     for (int k = j; k >= 0; k--) {
                                         fallen = true;
@@ -137,8 +135,11 @@ public class GameScene extends Scene {
                             }
                         }
                         if (!fallen) {
+                            EliminateBall();
+//                            EliminateBall(eliminateBalls);
                             System.out.println("天降結束");
                             cd1.countDown();
+
                             skyFallDelay.shutdown();
                         }
                     }
@@ -164,9 +165,9 @@ public class GameScene extends Scene {
                             ReplenishBall();
                             // 補珠-可以轉珠delay
                         } else if (countDown == 1) {
-                            canTurning = true;
                             eliminateDelay.shutdown();
                             two = null;
+                            canTurning = true;
                         }
                         countDown -= 1;
                     }
@@ -331,6 +332,77 @@ public class GameScene extends Scene {
 
         eliminateBalls[12] = (countCombo == -1) ? -1 : countCombo + 1;
         return eliminateBalls;
+    }
+    private void EliminateBall(int []eliminateBalls) {
+        int countCombo = -1;
+        // vertical
+        for (int i = 0; i < balls.get(0).size(); i++) {
+            ArrayList<Ball> sames = new ArrayList<>();
+            for (int j = 0; j < balls.size() - 1; j++) {
+                sames.add(balls.get(j).get(i));
+                if (balls.get(j).get(i).attribute == balls.get(j + 1).get(i).attribute && sames.get(0).attribute != Attribute.None) {
+                    if (sames.contains(balls.get(j + 1).get(i)))
+                        sames.add(balls.get(j + 1).get(i));
+                } else {
+                    if (sames.size() >= 3) {
+                        countCombo += 1;
+                        for (Ball same : sames) {
+                            // TODO count strong ball
+                            eliminateBalls[same.attribute.ordinal()] += 1;
+                            balls.get(same.indexY).set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
+                        }
+                    }
+                    sames.clear();
+                }
+                if (j + 1 == balls.size() - 1) {
+                    if (sames.size() >= 2) {
+                        if (balls.get(j + 1).get(i).attribute == sames.get(0).attribute && sames.get(0).attribute != Attribute.None)
+                            sames.add(balls.get(j + 1).get(i));
+                        countCombo += 1;
+                        for (Ball same : sames) {
+                            eliminateBalls[same.attribute.ordinal()] += 1;
+                            balls.get(same.indexY).set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
+                        }
+                    }
+                }
+            }
+        }
+
+        // Horizontal
+        for (ArrayList<Ball> list : balls) {
+            ArrayList<Ball> sames = new ArrayList<>();
+            for (int i = 0; i < list.size() - 1; i++) {
+                sames.add(list.get(i));
+                if (list.get(i).attribute == list.get(i + 1).attribute && sames.get(0).attribute != Attribute.None) {
+                    if (sames.contains(list.get(i + 1)))
+                        sames.add(list.get(i + 1));
+                } else {
+                    // Not same
+                    if (sames.size() >= 3) {
+                        countCombo += 1;
+                        for (Ball same : sames) {
+                            eliminateBalls[same.attribute.ordinal()] += 1;
+                            list.set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
+                        }
+                    }
+                    sames.clear();
+                }
+                // Hit wall
+                if (i + 1 == list.size() - 1) {
+                    if (sames.size() >= 2) {
+                        if (list.get(i + 1).attribute == sames.get(0).attribute && sames.get(0).attribute != Attribute.None)
+                            sames.add(list.get(i + 1));
+                        countCombo += 1;
+                        for (Ball same : sames) {
+                            eliminateBalls[same.attribute.ordinal()] += 1;
+                            list.set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
+                        }
+                    }
+                }
+            }
+        }
+
+        eliminateBalls[12] += (countCombo == -1) ? 0 : countCombo + 1;
     }
 
     /**
