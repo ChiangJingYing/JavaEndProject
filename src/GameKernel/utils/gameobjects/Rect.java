@@ -113,7 +113,7 @@ public class Rect {
     }
     
     public void paint(Graphics g) {
-        g.drawRect((int)x, (int)y, (int)width, (int)height);
+        g.fillRect((int)x, (int)y, (int)width, (int)height);
     }
     
     
