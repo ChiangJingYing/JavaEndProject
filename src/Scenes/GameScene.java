@@ -42,12 +42,18 @@ public class GameScene extends Scene {
         // init enemies
         for (int i = 0; i < numLevel; i++) {
             enemies.add(new ArrayList<>());
-            for (int j = 0; j < 3; j++) {
-                enemies.get(i).add(new Enemy(ImageController.instance().tryGetImage("../../../Image/Balls/None.png"),
-                        Attribute.None, 1, 1, 1, 1,
-                        j * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
-            }
         }
+//            for (int j = 0; j < 3; j++) {
+        enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/巨象.png"),
+                Attribute.None, 1, 1000, 100000, 10,
+                0* BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
+        enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
+                Attribute.None, 1, 1000, 100, 100000,
+                1* BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
+        enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
+                Attribute.None, 1, 1000, 100, 100000,
+                2* BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
+
     }
 
     @Override
