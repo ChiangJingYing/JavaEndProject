@@ -7,6 +7,7 @@ import GameKernel.utils.core.Scene;
 import GameObject.Attribute;
 import GameObject.Ball;
 import GameObject.Enemy;
+import GameObject.LifeBar;
 
 import java.awt.*;
 import java.util.*;
@@ -33,6 +34,7 @@ public class GameScene extends Scene {
     int nowLevel = 0; // 目前在第幾關
     int[] eliminateBalls = new int[1];
 
+    LifeBar bar;
     /**
      * 畫面開始時執行
      * 初始化轉珠盤、敵人、我方角色
@@ -68,15 +70,16 @@ public class GameScene extends Scene {
                 2* BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
 
         AudioResourceController.getInstance().loop("../../../Audio/mainBGM.wav",Integer.MAX_VALUE);
+        bar = new LifeBar(0,10,100,5,1000);
     }
 
     @Override
     public void sceneEnd() {
-
     }
 
     @Override
     public void paint(Graphics g) {
+        bar.paint(g);
         g.setColor(Color.white);
         g.setFont(new Font("標楷體", Font.PLAIN, 24));
         g.drawString(Integer.toString(turnTimeCountDown), 10, 50);
@@ -226,6 +229,7 @@ public class GameScene extends Scene {
             if (!canTurning || state == CommandSolver.MouseState.RELEASED) {
                 // 回復成可以轉珠
                 if (state == CommandSolver.MouseState.RELEASED) {
+                    bar.decreaseLife(250);
                     canTurning = false;
                     turnTimeCountDown = -1;
                     turnBallTimer.cancel();
