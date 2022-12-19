@@ -27,6 +27,6 @@ public class GameFrame extends JFrame {
         this.add(gk);
         this.pack();
         this.setVisible(true);
-        gk.run(true);
+        gk.run(false);
     }
 }

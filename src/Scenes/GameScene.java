@@ -22,7 +22,7 @@ public class GameScene extends Scene {
     ArrayList<ArrayList<Enemy>> enemies;
     Ball ControlBall;
     Random random;
-    int turnTime = 10; // 轉珠時長
+    int turnTime = 60; // 轉珠時長
     int turnTimeCountDown = -1; // 倒數
     Timer turnBallTimer; // 計時物件
     ScheduledExecutorService eliminateDelay;
@@ -41,7 +41,7 @@ public class GameScene extends Scene {
     public void sceneBegin() {
         random = new Random();
         balls = new ArrayList<>();
-        enemies = new ArrayList();
+        enemies = new ArrayList<>();
 
         // init Balls
         for (int i = 0; i < BALLPLATE_HEIGHT; i++) {
@@ -59,15 +59,15 @@ public class GameScene extends Scene {
 //            for (int j = 0; j < 3; j++) {
         enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/巨象.png"),
                 Attribute.None, 1, 1000, 100000, 10,
-                0* BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
+                0 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
         enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
                 Attribute.None, 1, 1000, 100, 100000,
-                1* BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
+                1 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
         enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
                 Attribute.None, 1, 1000, 100, 100000,
-                2* BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
+                2 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
 
-        AudioResourceController.getInstance().loop("../../../Audio/mainBGM.wav",Integer.MAX_VALUE);
+        AudioResourceController.getInstance().loop("../../../Audio/mainBGM.wav", Integer.MAX_VALUE);
     }
 
     @Override
@@ -100,13 +100,8 @@ public class GameScene extends Scene {
             if (two == null || two.isShutdown())
                 eliminateBalls = EliminateBall();
             if ((two == null || two.isShutdown()) && eliminateBalls != null) {
-                if (eliminateBalls[12] != -1) {
-                    for (int i = 0; i < 6; i++)
-                        System.out.println("\u001B[34m" + Arrays.asList(Attribute.values()).get(i) + ": " + eliminateBalls[i] + "\u001B[39m");
-                    System.out.println("\u001B[34m" + "Combo: " + eliminateBalls[12] + "\n--------------" + "\u001B[39m");
-                }
                 if (two == null) {
-                    runSkyFallAndComplement();
+                    runSkyFallAndComplement(eliminateBalls);
                 }
                 eliminateBalls = null;
             }
@@ -116,75 +111,101 @@ public class GameScene extends Scene {
     /**
      * 依序執行執行天將、補珠，不影響繪圖程序
      */
-    private void runSkyFallAndComplement() {
+    private void runSkyFallAndComplement(int[] eliminateBallsO) {
+        int[] eliminateBalls = new int[13];
         CountDownLatch cd1 = new CountDownLatch(1);
+        CountDownLatch cd2 = new CountDownLatch(1);
         two = Executors.newSingleThreadScheduledExecutor();
-        Runnable task1 = new TimerTask() {
-            @Override
-            public void run() {
-                skyFallDelay = Executors.newSingleThreadScheduledExecutor();
-                skyFallDelay.scheduleAtFixedRate(new TimerTask() {
-                    @Override
-                    public void run() {
-                        System.out.println("falling");
-                        boolean fallen = false;
-                        for (int i = 0; i < BALLPLATE_WIDTH; i++) {
-                            boolean findNone = false;
-                            for (int j = BALLPLATE_HEIGHT - 1; j >= 0; j--) {
-                                Ball tmp = balls.get(j).get(i);
-                                if (tmp.attribute == Attribute.None) findNone = true;
-                                if (tmp.attribute != Attribute.None && findNone) {
-                                    for (int k = j; k >= 0; k--) {
-                                        fallen = true;
-                                        tmp = balls.get(k).get(i);
-                                        exchangeBall(tmp, balls.get(k + 1).get(i));
-                                    }
-                                    break;
+        // 天降、天降後消珠
+        Runnable task1 = () -> {
+            skyFallDelay = Executors.newSingleThreadScheduledExecutor();
+            skyFallDelay.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    boolean fallen = false;
+                    for (int i = 0; i < BALLPLATE_WIDTH; i++) {
+                        boolean findNone = false;
+                        for (int j = BALLPLATE_HEIGHT - 1; j >= 0; j--) {
+                            Ball tmp = balls.get(j).get(i);
+                            if (tmp.attribute == Attribute.None) findNone = true;
+                            if (tmp.attribute != Attribute.None && findNone) {
+                                for (int k = j; k >= 0; k--) {
+                                    fallen = true;
+                                    tmp = balls.get(k).get(i);
+                                    exchangeBall(tmp, balls.get(k + 1).get(i));
                                 }
+                                break;
                             }
                         }
-                        if (!fallen) {
-                            EliminateBall();
-//                            EliminateBall(eliminateBalls);
+                    }
+                    if (!fallen) {
+                        if (!EliminateBall(eliminateBalls)) {
                             System.out.println("天降結束");
                             cd1.countDown();
-
                             skyFallDelay.shutdown();
                         }
                     }
-                }, 0, 500, TimeUnit.MILLISECONDS);
-            }
-        };
-        Runnable task2 = new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    cd1.await();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
                 }
-                System.out.println("補珠開始");
-                eliminateDelay = Executors.newSingleThreadScheduledExecutor();
-                eliminateDelay.scheduleWithFixedDelay(new TimerTask() {
-                    int countDown = 4;
-
-                    @Override
-                    public void run() {
-                        if (countDown == 4) {
-                            ReplenishBall();
-                            // 補珠-可以轉珠delay
-                        } else if (countDown == 1) {
-                            eliminateDelay.shutdown();
-                            two = null;
-                            canTurning = true;
-                        }
-                        countDown -= 1;
-                    }
-                }, 0, 500, TimeUnit.MILLISECONDS);
+            }, 0, 500, TimeUnit.MILLISECONDS);
+        };
+        // 補珠、轉珠延遲
+        Runnable task2 = () -> {
+            try {
+                cd1.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
+            System.out.println("補珠開始");
+            eliminateDelay = Executors.newSingleThreadScheduledExecutor();
+            eliminateDelay.scheduleWithFixedDelay(new TimerTask() {
+                int countDown = 4;
+
+                @Override
+                public void run() {
+                    if (countDown == 4) {
+                        ReplenishBall();
+                        // 補珠-可以轉珠delay
+                    } else if (countDown == 1) {
+                        eliminateDelay.shutdown();
+                        cd2.countDown();
+                        // TODO should move
+
+                    }
+                    countDown -= 1;
+                }
+            }, 0, 500, TimeUnit.MILLISECONDS);
+        };
+        // 攻擊、換關
+        Runnable task3 = () -> {
+            try {
+                cd2.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            for (int i = 0; i < eliminateBalls.length; i++) {
+                eliminateBallsO[i] += eliminateBalls[i];
+            }
+            // TODO calculate attack value
+
+            if (eliminateBallsO[12] != -1) {
+                for (int i = 0; i < 6; i++)
+                    System.out.println("\u001B[34m" + Arrays.asList(Attribute.values()).get(i) + ": " + eliminateBallsO[i] + "\u001B[39m");
+            }
+            System.out.println("\u001B[34m" +eliminateBallsO[12] + "\u001B[39m");
+
+            for (Enemy e : enemies.get(nowLevel)) {
+                if (!e.beAttacked(100100)) {
+                    enemies.get(nowLevel).remove(e);
+                    break;
+                }
+            }
+            if (enemies.get(nowLevel).size() == 0) nowLevel += 1;
+            two = null;
+            canTurning = true;
         };
         two.schedule(task1, 0, TimeUnit.SECONDS);
         two.schedule(task2, 0, TimeUnit.SECONDS);
+        two.schedule(task3, 0, TimeUnit.SECONDS);
     }
 
 
@@ -342,7 +363,13 @@ public class GameScene extends Scene {
         eliminateBalls[12] = (countCombo == -1) ? -1 : countCombo + 1;
         return eliminateBalls;
     }
-    private void EliminateBall(int []eliminateBalls) {
+
+    /**
+     * 消除水平、垂直三顆以上相同屬性的珠子(可一直累積)
+     * @param eliminateBalls 紀錄陣列
+     * @return 是否有消除
+     */
+    private boolean EliminateBall(int[] eliminateBalls) {
         int countCombo = -1;
         // vertical
         for (int i = 0; i < balls.get(0).size(); i++) {
@@ -412,6 +439,7 @@ public class GameScene extends Scene {
         }
 
         eliminateBalls[12] += (countCombo == -1) ? 0 : countCombo + 1;
+        return countCombo != -1;
     }
 
     /**
