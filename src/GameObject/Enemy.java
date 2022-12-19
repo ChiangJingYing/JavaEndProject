@@ -12,6 +12,7 @@ public class Enemy {
     boolean isSurvive = true;
     boolean haveSkill;
     Skill skill;
+    public LifeBar life;
 
     public int x;
     public int y;
@@ -29,6 +30,7 @@ public class Enemy {
         this.skill = skill;
         this.x = x;
         this.y = y;
+        life = new LifeBar(x,y+30,100,5,this.healthValue);
 
         this.haveSkill = true;
     }
@@ -45,12 +47,13 @@ public class Enemy {
         this.x = x;
         this.y = y;
 
+        life = new LifeBar(x,y+100+30,80,5,this.healthValue);
         this.haveSkill = false;
     }
 
     public void beAttacked(int damage) {
         int finalDamage = (damage >= defencePower) ? (damage - defencePower) : 1;
-        healthValue -= finalDamage;
+        life.decreaseLife(finalDamage);
         isSurvive = healthValue > 0;
     }
 

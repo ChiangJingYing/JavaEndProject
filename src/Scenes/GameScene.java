@@ -7,7 +7,6 @@ import GameKernel.utils.core.Scene;
 import GameObject.Attribute;
 import GameObject.Ball;
 import GameObject.Enemy;
-import GameObject.LifeBar;
 
 import java.awt.*;
 import java.util.*;
@@ -34,7 +33,6 @@ public class GameScene extends Scene {
     int nowLevel = 0; // 目前在第幾關
     int[] eliminateBalls = new int[1];
 
-    LifeBar bar;
     /**
      * 畫面開始時執行
      * 初始化轉珠盤、敵人、我方角色
@@ -58,19 +56,17 @@ public class GameScene extends Scene {
         for (int i = 0; i < numLevel; i++) {
             enemies.add(new ArrayList<>());
         }
-//            for (int j = 0; j < 3; j++) {
         enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/巨象.png"),
-                Attribute.None, 1, 1000, 100000, 10,
-                0* BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
+                Attribute.None, 1, 1000, 100000, 1000,
+                0 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
         enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
                 Attribute.None, 1, 1000, 100, 100000,
-                1* BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
+                1 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
         enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
                 Attribute.None, 1, 1000, 100, 100000,
-                2* BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
+                2 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
 
-        AudioResourceController.getInstance().loop("../../../Audio/mainBGM.wav",Integer.MAX_VALUE);
-        bar = new LifeBar(0,10,100,5,1000);
+        AudioResourceController.getInstance().loop("../../../Audio/mainBGM.wav", Integer.MAX_VALUE);
     }
 
     @Override
@@ -79,7 +75,6 @@ public class GameScene extends Scene {
 
     @Override
     public void paint(Graphics g) {
-        bar.paint(g);
         g.setColor(Color.white);
         g.setFont(new Font("標楷體", Font.PLAIN, 24));
         g.drawString(Integer.toString(turnTimeCountDown), 10, 50);
@@ -93,6 +88,7 @@ public class GameScene extends Scene {
         // draw enemies
         for (Enemy enemy : enemies.get(nowLevel)) {
             g.drawImage(enemy.enemyImage, enemy.x, enemy.y, 100, 100, null);
+            enemy.life.paint(g);
         }
     }
 
@@ -229,7 +225,7 @@ public class GameScene extends Scene {
             if (!canTurning || state == CommandSolver.MouseState.RELEASED) {
                 // 回復成可以轉珠
                 if (state == CommandSolver.MouseState.RELEASED) {
-                    bar.decreaseLife(250);
+                    enemies.get(0).get(0).beAttacked(100100);
                     canTurning = false;
                     turnTimeCountDown = -1;
                     turnBallTimer.cancel();
@@ -346,7 +342,8 @@ public class GameScene extends Scene {
         eliminateBalls[12] = (countCombo == -1) ? -1 : countCombo + 1;
         return eliminateBalls;
     }
-    private void EliminateBall(int []eliminateBalls) {
+
+    private void EliminateBall(int[] eliminateBalls) {
         int countCombo = -1;
         // vertical
         for (int i = 0; i < balls.get(0).size(); i++) {

@@ -30,7 +30,6 @@ public class LifeBar extends GameObject {
                 @Override
                 public void run() {
                     collider().scaleX(collider().width() - minusRate);
-                    System.out.println(collider().width());
                     if (collider().width() <= afterWidth) {
                         System.out.println("end");
                         animator.shutdown();
