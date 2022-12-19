@@ -56,6 +56,7 @@ public class LifeBar extends GameObject {
             nowLife -= injuryValue;
             minusRate = ((float) injuryValue / life / GlobalParameter.FPS * 2) * painter().width();
             afterWidth = ((float) nowLife / life) * painter().width();
+            afterWidth = (afterWidth < 1)? 5:afterWidth;
             update();
         }
     }

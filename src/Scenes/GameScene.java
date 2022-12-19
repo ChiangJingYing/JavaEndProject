@@ -57,13 +57,13 @@ public class GameScene extends Scene {
             enemies.add(new ArrayList<>());
         }
         enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/巨象.png"),
-                Attribute.None, 1, 1000, 100000, 10,
+                Attribute.None, 1, 1000, 100000, 1000,
                 0 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
         enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
-                Attribute.None, 1, 1000, 100, 100000,
+                Attribute.None, 1, 1000, 100000, 100000,
                 1 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
         enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
-                Attribute.None, 1, 1000, 100, 100000,
+                Attribute.None, 1, 1000, 100000, 100000,
                 2 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
 
         AudioResourceController.getInstance().loop("../../../Audio/mainBGM.wav", Integer.MAX_VALUE);
@@ -192,13 +192,13 @@ public class GameScene extends Scene {
                 for (int i = 0; i < 6; i++)
                     System.out.println("\u001B[34m" + Arrays.asList(Attribute.values()).get(i) + ": " + eliminateBallsO[i] + "\u001B[39m");
             }
-            System.out.println("\u001B[34m" +eliminateBallsO[12] + "\u001B[39m");
+            System.out.println("\u001B[34m" + eliminateBallsO[12] + "\u001B[39m");
 
             for (Enemy e : enemies.get(nowLevel)) {
                 if (!e.beAttacked(100100)) {
                     enemies.get(nowLevel).remove(e);
-                    break;
                 }
+                break;
             }
             if (enemies.get(nowLevel).size() == 0) nowLevel += 1;
             two = null;
@@ -367,6 +367,7 @@ public class GameScene extends Scene {
 
     /**
      * 消除水平、垂直三顆以上相同屬性的珠子(可一直累積)
+     *
      * @param eliminateBalls 紀錄陣列
      * @return 是否有消除
      */

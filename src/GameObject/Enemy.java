@@ -54,6 +54,7 @@ public class Enemy {
     public boolean beAttacked(int damage) {
         int finalDamage = (damage >= defencePower) ? (damage - defencePower) : 1;
         life.decreaseLife(finalDamage);
+        healthValue -= finalDamage;
         isSurvive = healthValue > 0;
         return isSurvive;
     }
