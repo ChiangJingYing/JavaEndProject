@@ -8,6 +8,7 @@ import GameKernel.utils.gameobjects.Animator;
 import GameObject.Attribute;
 import GameObject.Ball;
 import GameObject.Enemy;
+import GameObject.TimeLimitBar;
 
 import java.awt.*;
 import java.util.*;
@@ -35,12 +36,15 @@ public class GameScene extends Scene {
     int[] eliminateBalls = new int[1];
     Animator strongBallAnimator;
 
+    TimeLimitBar timeLimitBar;
+
     /**
      * 畫面開始時執行
      * 初始化轉珠盤、敵人、我方角色
      */
     @Override
     public void sceneBegin() {
+        timeLimitBar = new TimeLimitBar(10,100,100,10,turnTime);
         random = new Random();
         balls = new ArrayList<>();
         enemies = new ArrayList<>();
@@ -71,7 +75,7 @@ public class GameScene extends Scene {
                 Attribute.None, 1, 1000, 100000, 100000,
                 2 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
 
-        AudioResourceController.getInstance().loop("../../../Audio/mainBGM.wav", Integer.MAX_VALUE);
+        AudioResourceController.getInstance().loop("../../../Audio/mainBGM.wav",Integer.MAX_VALUE);
     }
 
     @Override
@@ -81,6 +85,7 @@ public class GameScene extends Scene {
 
     @Override
     public void paint(Graphics g) {
+        timeLimitBar.paint(g);
         g.setColor(Color.white);
         g.setFont(new Font("標楷體", Font.PLAIN, 24));
         g.drawString(Integer.toString(turnTimeCountDown), 10, 50);
@@ -236,9 +241,13 @@ public class GameScene extends Scene {
                             @Override
                             public void run() {
                                 turnTimeCountDown -= 1;
+                                timeLimitBar.update();
                                 if (turnTimeCountDown == -1) {
                                     canTurning = false;
                                     turnBallTimer.cancel();
+                                    timeLimitBar.animator.shutdown();
+                                    timeLimitBar.animator = null;
+                                    timeLimitBar.reset();
                                 }
                             }
                         }, 0, 1000);
@@ -260,6 +269,11 @@ public class GameScene extends Scene {
                     canTurning = false;
                     turnTimeCountDown = -1;
                     turnBallTimer.cancel();
+                    if(timeLimitBar.animator != null) {
+                        timeLimitBar.animator.shutdown();
+                        timeLimitBar.animator = null;
+                        timeLimitBar.reset();
+                    }
                 }
                 ControlBall = null;
             }
