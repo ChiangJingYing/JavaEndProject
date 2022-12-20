@@ -7,7 +7,7 @@ import java.awt.*;
 public class Ball {
     public Attribute attribute;
     public Image image;
-    boolean isStrong = false;
+    public boolean isStrong = false;
     public int x;
     public int y;
     public int indexX;
@@ -19,9 +19,15 @@ public class Ball {
         this.indexX = indexX;
         this.indexY = indexY;
         this.attribute = attribute;
-        if (!isStrong)
             image = (ImageController.instance().tryGetImage("../../../Image/Balls/" + attribute + ".png"));
-        else // When isStrong ball get other than default img
-            image = (ImageController.instance().tryGetImage("../Image/Balls/" + attribute + ".png"));
+    }
+    public Ball(int x, int y, int indexX, int indexY, Attribute attribute,boolean isStrong) {
+        this.x = x;
+        this.y = y;
+        this.indexX = indexX;
+        this.indexY = indexY;
+        this.attribute = attribute;
+        this.isStrong = isStrong;
+        image = (ImageController.instance().tryGetImage("../../../Image/Balls/" + attribute + ".png"));
     }
 }

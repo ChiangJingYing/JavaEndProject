@@ -4,6 +4,7 @@ import GameKernel.utils.controllers.AudioResourceController;
 import GameKernel.utils.controllers.ImageController;
 import GameKernel.utils.core.CommandSolver;
 import GameKernel.utils.core.Scene;
+import GameKernel.utils.gameobjects.Animator;
 import GameObject.Attribute;
 import GameObject.Ball;
 import GameObject.Enemy;
@@ -32,6 +33,7 @@ public class GameScene extends Scene {
     int numLevel = 3; // 關卡數量
     int nowLevel = 0; // 目前在第幾關
     int[] eliminateBalls = new int[1];
+    Animator strongBallAnimator;
 
     /**
      * 畫面開始時執行
@@ -42,6 +44,9 @@ public class GameScene extends Scene {
         random = new Random();
         balls = new ArrayList<>();
         enemies = new ArrayList<>();
+
+        // init animator
+        strongBallAnimator = new Animator("../../../Image/Balls/stringBall.png", 10, 80, 80, new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19});
 
         // init Balls
         for (int i = 0; i < BALLPLATE_HEIGHT; i++) {
@@ -84,6 +89,7 @@ public class GameScene extends Scene {
             for (Ball ball : list) {
                 g.drawImage(ball.image, ball.x, ball.y,
                         BALL_WIDTH, BALL_HEIGHT, null);
+                if (ball.isStrong) strongBallAnimator.paint(ball.x, ball.y, g);
             }
         }
         // draw enemies
@@ -95,6 +101,7 @@ public class GameScene extends Scene {
 
     @Override
     public void update() {
+        strongBallAnimator.update();
         // 消珠 ＆ 天降
         if (!canTurning /*轉珠結束*/) {
             if (two == null || two.isShutdown())
@@ -112,7 +119,7 @@ public class GameScene extends Scene {
      * 依序執行執行天將、補珠，不影響繪圖程序
      */
     private void runSkyFallAndComplement(int[] eliminateBallsO) {
-        int[] eliminateBalls = new int[13];
+        int[] eliminateBalls = new int[14];
         CountDownLatch cd1 = new CountDownLatch(1);
         CountDownLatch cd2 = new CountDownLatch(1);
         two = Executors.newSingleThreadScheduledExecutor();
@@ -164,7 +171,10 @@ public class GameScene extends Scene {
                 @Override
                 public void run() {
                     if (countDown == 4) {
-                        ReplenishBall();
+                        for (int i = 0; i < eliminateBalls.length; i++) {
+                            eliminateBallsO[i] += eliminateBalls[i];
+                        }
+                        ReplenishBall(eliminateBallsO[13]);
                         // 補珠-可以轉珠delay
                     } else if (countDown == 1) {
                         eliminateDelay.shutdown();
@@ -183,16 +193,15 @@ public class GameScene extends Scene {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            for (int i = 0; i < eliminateBalls.length; i++) {
-                eliminateBallsO[i] += eliminateBalls[i];
-            }
+
             // TODO calculate attack value
 
             if (eliminateBallsO[12] != -1) {
                 for (int i = 0; i < 6; i++)
                     System.out.println("\u001B[34m" + Arrays.asList(Attribute.values()).get(i) + ": " + eliminateBallsO[i] + "\u001B[39m");
+                for (int i = 6; i < 12; i++)
+                    System.out.println("\u001B[34m" + "strong"+Arrays.asList(Attribute.values()).get(i - 6) + ": " + eliminateBallsO[i] + "\u001B[39m");
             }
-            System.out.println("\u001B[34m" + eliminateBallsO[12] + "\u001B[39m");
 
             for (Enemy e : enemies.get(nowLevel)) {
                 if (!e.beAttacked(100100)) {
@@ -292,7 +301,7 @@ public class GameScene extends Scene {
      * @return eliminateBall: 前六個為個屬一般珠 後六為個屬強化珠 最後為Combo數，若無為-1
      */
     private int[] EliminateBall() {
-        int[] eliminateBalls = new int[13]; // first six normal ball, next six string ball, final Combo
+        int[] eliminateBalls = new int[14]; // first six normal ball, next six string ball, final Combo
         int countCombo = -1;
         // vertical
         for (int i = 0; i < balls.get(0).size(); i++) {
@@ -304,10 +313,11 @@ public class GameScene extends Scene {
                         sames.add(balls.get(j + 1).get(i));
                 } else {
                     if (sames.size() >= 3) {
+                        if (sames.size() >= 5) eliminateBalls[13] += 1;
                         countCombo += 1;
                         for (Ball same : sames) {
                             // TODO count strong ball
-                            eliminateBalls[same.attribute.ordinal()] += 1;
+                            eliminateBalls[(same.isStrong) ? same.attribute.ordinal() + 6 : same.attribute.ordinal()] += 1;
                             balls.get(same.indexY).set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
                         }
                     }
@@ -315,11 +325,12 @@ public class GameScene extends Scene {
                 }
                 if (j + 1 == balls.size() - 1) {
                     if (sames.size() >= 2) {
+                        if (sames.size() >= 4) eliminateBalls[13] += 1;
                         if (balls.get(j + 1).get(i).attribute == sames.get(0).attribute && sames.get(0).attribute != Attribute.None)
                             sames.add(balls.get(j + 1).get(i));
                         countCombo += 1;
                         for (Ball same : sames) {
-                            eliminateBalls[same.attribute.ordinal()] += 1;
+                            eliminateBalls[(same.isStrong) ? same.attribute.ordinal() + 6 : same.attribute.ordinal()] += 1;
                             balls.get(same.indexY).set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
                         }
                     }
@@ -338,9 +349,10 @@ public class GameScene extends Scene {
                 } else {
                     // Not same
                     if (sames.size() >= 3) {
+                        if (sames.size() >= 5) eliminateBalls[13] += 1;
                         countCombo += 1;
                         for (Ball same : sames) {
-                            eliminateBalls[same.attribute.ordinal()] += 1;
+                            eliminateBalls[(same.isStrong) ? same.attribute.ordinal() + 6 : same.attribute.ordinal()] += 1;
                             list.set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
                         }
                     }
@@ -349,11 +361,12 @@ public class GameScene extends Scene {
                 // Hit wall
                 if (i + 1 == list.size() - 1) {
                     if (sames.size() >= 2) {
+                        if (sames.size() >= 4) eliminateBalls[13] += 1;
                         if (list.get(i + 1).attribute == sames.get(0).attribute && sames.get(0).attribute != Attribute.None)
                             sames.add(list.get(i + 1));
                         countCombo += 1;
                         for (Ball same : sames) {
-                            eliminateBalls[same.attribute.ordinal()] += 1;
+                            eliminateBalls[(same.isStrong) ? same.attribute.ordinal() + 6 : same.attribute.ordinal()] += 1;
                             list.set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
                         }
                     }
@@ -383,10 +396,11 @@ public class GameScene extends Scene {
                         sames.add(balls.get(j + 1).get(i));
                 } else {
                     if (sames.size() >= 3) {
+                        if (sames.size() >= 5) eliminateBalls[13] += 1;
                         countCombo += 1;
                         for (Ball same : sames) {
                             // TODO count strong ball
-                            eliminateBalls[same.attribute.ordinal()] += 1;
+                            eliminateBalls[(same.isStrong) ? same.attribute.ordinal() + 6 : same.attribute.ordinal()] += 1;
                             balls.get(same.indexY).set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
                         }
                     }
@@ -394,11 +408,12 @@ public class GameScene extends Scene {
                 }
                 if (j + 1 == balls.size() - 1) {
                     if (sames.size() >= 2) {
+                        if (sames.size() >= 4) eliminateBalls[13] += 1;
                         if (balls.get(j + 1).get(i).attribute == sames.get(0).attribute && sames.get(0).attribute != Attribute.None)
                             sames.add(balls.get(j + 1).get(i));
                         countCombo += 1;
                         for (Ball same : sames) {
-                            eliminateBalls[same.attribute.ordinal()] += 1;
+                            eliminateBalls[(same.isStrong) ? same.attribute.ordinal() + 6 : same.attribute.ordinal()] += 1;
                             balls.get(same.indexY).set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
                         }
                     }
@@ -417,9 +432,10 @@ public class GameScene extends Scene {
                 } else {
                     // Not same
                     if (sames.size() >= 3) {
+                        if (sames.size() >= 5) eliminateBalls[13] += 1;
                         countCombo += 1;
                         for (Ball same : sames) {
-                            eliminateBalls[same.attribute.ordinal()] += 1;
+                            eliminateBalls[(same.isStrong) ? same.attribute.ordinal() + 6 : same.attribute.ordinal()] += 1;
                             list.set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
                         }
                     }
@@ -428,11 +444,12 @@ public class GameScene extends Scene {
                 // Hit wall
                 if (i + 1 == list.size() - 1) {
                     if (sames.size() >= 2) {
+                        if (sames.size() >= 4) eliminateBalls[13] += 1;
                         if (list.get(i + 1).attribute == sames.get(0).attribute && sames.get(0).attribute != Attribute.None)
                             sames.add(list.get(i + 1));
                         countCombo += 1;
                         for (Ball same : sames) {
-                            eliminateBalls[same.attribute.ordinal()] += 1;
+                            eliminateBalls[(same.isStrong) ? same.attribute.ordinal() + 6 : same.attribute.ordinal()] += 1;
                             list.set(same.indexX, new Ball(same.x, same.y, same.indexX, same.indexY, Attribute.None));
                         }
                     }
@@ -447,12 +464,22 @@ public class GameScene extends Scene {
     /**
      * 將Attribute為None的珠子填充隨機屬性的正常珠子
      */
-    private void ReplenishBall() {
+    private void ReplenishBall(int strongBallCount) {
+        ArrayList<Integer> strongIndex = new ArrayList<>(Collections.nCopies(strongBallCount, 0));
+        for (int i = 0; i < strongIndex.size(); i++) {
+            int tmp;
+            do {
+                tmp = random.nextInt(strongBallCount * 5);
+            } while (strongIndex.contains(tmp));
+            strongIndex.set(i, tmp);
+        }
+        int count = 0;
         for (int i = 0; i < BALLPLATE_WIDTH; i++) {
             for (int j = 0; j < BALLPLATE_HEIGHT; j++) {
                 if (balls.get(j).get(i).attribute == Attribute.None) {
                     Ball tmp = balls.get(j).get(i);
-                    balls.get(j).set(i, new Ball(tmp.x, tmp.y, tmp.indexX, tmp.indexY, Attribute.values()[random.nextInt(6)]));
+                    balls.get(j).set(i, new Ball(tmp.x, tmp.y, tmp.indexX, tmp.indexY, Attribute.values()[random.nextInt(6)], (strongIndex.contains(count)) ? true : false));
+                    count += 1;
                 }
             }
         }
