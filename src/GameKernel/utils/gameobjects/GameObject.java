@@ -84,13 +84,13 @@ public abstract class GameObject implements GameInterface{
     @Override
     public void paint(Graphics g) {
         paintComponent(g);
-        if(Global.IS_DEBUG){
-            g.setColor(Color.green);
-            painter.paint(g);
-            g.setColor(Color.red);
-            collider.paint(g);
-            g.setColor(Color.black);
-        }
+//        if(Global.IS_DEBUG){
+//            g.setColor(Color.green);
+//            painter.paint(g);
+//            g.setColor(Color.red);
+//            collider.paint(g);
+//            g.setColor(Color.black);
+//        }
     }
     
     public abstract void paintComponent(Graphics g);

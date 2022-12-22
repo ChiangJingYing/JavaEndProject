@@ -42,7 +42,11 @@ public class LifeBar extends GameObject {
 
     @Override
     public void paintComponent(Graphics g) {
-
+        g.setColor(Color.green);
+        painter().paint(g);
+        g.setColor(Color.red);
+        collider().paint(g);
+        g.setColor(Color.black);
     }
 
     @Override
