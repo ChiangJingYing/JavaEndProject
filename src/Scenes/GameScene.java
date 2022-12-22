@@ -44,7 +44,7 @@ public class GameScene extends Scene {
      */
     @Override
     public void sceneBegin() {
-        timeLimitBar = new TimeLimitBar(10,100,100,10,turnTime);
+        timeLimitBar = new TimeLimitBar(-1, -1, BALL_WIDTH * BALLPLATE_WIDTH, 10, turnTime);
         random = new Random();
         balls = new ArrayList<>();
         enemies = new ArrayList<>();
@@ -56,7 +56,7 @@ public class GameScene extends Scene {
         for (int i = 0; i < BALLPLATE_HEIGHT; i++) {
             balls.add(new ArrayList<>());
             for (int j = 0; j < BALLPLATE_WIDTH; j++) {
-                balls.get(i).add(new Ball(j * BALL_WIDTH + SCREEN_WIDTH / 4, i * BALL_HEIGHT + (int) (SCREEN_WIDTH * 0.3),
+                balls.get(i).add(new Ball(j * BALL_WIDTH + SCREEN_WIDTH / 4 - 27, i * BALL_HEIGHT + (int) (SCREEN_WIDTH * 0.3),
                         j, i, Attribute.values()[random.nextInt(6)]));
             }
         }
@@ -269,10 +269,10 @@ public class GameScene extends Scene {
                     canTurning = false;
                     turnTimeCountDown = -1;
                     turnBallTimer.cancel();
+                    timeLimitBar.reset();
                     if(timeLimitBar.animator != null) {
                         timeLimitBar.animator.shutdown();
                         timeLimitBar.animator = null;
-                        timeLimitBar.reset();
                     }
                 }
                 ControlBall = null;
