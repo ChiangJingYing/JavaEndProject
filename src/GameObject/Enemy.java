@@ -30,7 +30,7 @@ public class Enemy {
         this.skill = skill;
         this.x = x;
         this.y = y;
-        life = new LifeBar(x,y+30,100,5,this.healthValue);
+        life = new LifeBar(x, y + 30, 100, 5, this.healthValue);
 
         this.haveSkill = true;
     }
@@ -47,10 +47,16 @@ public class Enemy {
         this.x = x;
         this.y = y;
 
-        life = new LifeBar(x,y+100+30,80,5,this.healthValue);
+        life = new LifeBar(x, y + 100 + 30, 80, 5, this.healthValue);
         this.haveSkill = false;
     }
 
+    /**
+     * 計算被攻擊的傷害、扣除自身生命值
+     *
+     * @param damage 傷害量
+     * @return 是否存活
+     */
     public boolean beAttacked(int damage) {
         int finalDamage = (damage >= defencePower) ? (damage - defencePower) : 1;
         life.decreaseLife(finalDamage);

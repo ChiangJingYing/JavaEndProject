@@ -1,6 +1,7 @@
 package GameObject;
 
 import GameKernel.utils.gameobjects.GameObject;
+import GameObject.Setting.GlobalParameter;
 
 import java.awt.*;
 import java.util.TimerTask;

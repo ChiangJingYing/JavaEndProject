@@ -1,5 +1,5 @@
-import static GameObject.GlobalParameter.SCREEN_HEIGHT;
-import static GameObject.GlobalParameter.SCREEN_WIDTH;
+import static GameObject.Setting.GlobalParameter.SCREEN_HEIGHT;
+import static GameObject.Setting.GlobalParameter.SCREEN_WIDTH;
 
 public class Start {
     public static void main(String[] args) {

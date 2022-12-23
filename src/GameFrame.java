@@ -5,8 +5,8 @@ import Scenes.GameScene;
 import javax.swing.*;
 import java.awt.*;
 
-import static GameObject.GlobalParameter.FPS;
-import static GameObject.GlobalParameter.UPS;
+import static GameObject.Setting.GlobalParameter.FPS;
+import static GameObject.Setting.GlobalParameter.UPS;
 
 public class GameFrame extends JFrame {
     public GameFrame(String title, int width, int height) {

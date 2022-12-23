@@ -5,10 +5,8 @@ import GameKernel.utils.controllers.ImageController;
 import GameKernel.utils.core.CommandSolver;
 import GameKernel.utils.core.Scene;
 import GameKernel.utils.gameobjects.Animator;
-import GameObject.Attribute;
-import GameObject.Ball;
-import GameObject.Enemy;
-import GameObject.TimeLimitBar;
+import GameObject.*;
+import GameObject.Setting.Team;
 
 import java.awt.*;
 import java.util.*;
@@ -17,11 +15,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static GameObject.GlobalParameter.*;
+import static GameObject.Setting.GlobalParameter.*;
 
 public class GameScene extends Scene {
     ArrayList<ArrayList<Ball>> balls;
     ArrayList<ArrayList<Enemy>> enemies;
+    Team team;
     Ball ControlBall;
     Random random;
     int turnTime = 60; // 轉珠時長
@@ -56,17 +55,18 @@ public class GameScene extends Scene {
         for (int i = 0; i < BALLPLATE_HEIGHT; i++) {
             balls.add(new ArrayList<>());
             for (int j = 0; j < BALLPLATE_WIDTH; j++) {
-                balls.get(i).add(new Ball(j * BALL_WIDTH + SCREEN_WIDTH / 4 - 27, i * BALL_HEIGHT + (int) (SCREEN_WIDTH * 0.3),
+                balls.get(i).add(new Ball(j * BALL_WIDTH + SCREEN_WIDTH / 4 - 27, i * BALL_HEIGHT + (int) (SCREEN_WIDTH * 0.4),
                         j, i, Attribute.values()[random.nextInt(6)]));
             }
         }
+        team = new Team();
 
         // init enemies
         for (int i = 0; i < numLevel; i++) {
             enemies.add(new ArrayList<>());
         }
         enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/巨象.png"),
-                Attribute.None, 1, 1000, 100000, 1000,
+                Attribute.None, 1, 1000, 1, 100000,
                 0 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
         enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
                 Attribute.None, 1, 1000, 100000, 100000,
@@ -75,7 +75,7 @@ public class GameScene extends Scene {
                 Attribute.None, 1, 1000, 100000, 100000,
                 2 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
 
-        AudioResourceController.getInstance().loop("../../../Audio/mainBGM.wav",Integer.MAX_VALUE);
+        AudioResourceController.getInstance().loop("../../../Audio/mainBGM.wav", Integer.MAX_VALUE);
     }
 
     @Override
@@ -102,6 +102,11 @@ public class GameScene extends Scene {
             g.drawImage(enemy.enemyImage, enemy.x, enemy.y, 100, 100, null);
             enemy.life.paint(g);
         }
+
+        for (MainCharacter m : team.team) {
+            g.drawImage(m.character_Image, m.x, m.y, TEAM_WIDTH, TEAM_HEIGHT, null);
+        }
+
     }
 
     @Override
@@ -121,7 +126,7 @@ public class GameScene extends Scene {
     }
 
     /**
-     * 依序執行執行天將、補珠，不影響繪圖程序
+     * 依序執行執行天將、補珠、攻擊，不影響繪圖程序
      */
     private void runSkyFallAndComplement(int[] eliminateBallsO) {
         int[] eliminateBalls = new int[14];
@@ -205,14 +210,30 @@ public class GameScene extends Scene {
                 for (int i = 0; i < 6; i++)
                     System.out.println("\u001B[34m" + Arrays.asList(Attribute.values()).get(i) + ": " + eliminateBallsO[i] + "\u001B[39m");
                 for (int i = 6; i < 12; i++)
-                    System.out.println("\u001B[34m" + "strong"+Arrays.asList(Attribute.values()).get(i - 6) + ": " + eliminateBallsO[i] + "\u001B[39m");
+                    System.out.println("\u001B[34m" + "strong" + Arrays.asList(Attribute.values()).get(i - 6) + ": " + eliminateBallsO[i] + "\u001B[39m");
             }
 
-            for (Enemy e : enemies.get(nowLevel)) {
-                if (!e.beAttacked(100100)) {
-                    enemies.get(nowLevel).remove(e);
+            // calculate attack and recover value of each mainCharacter
+            for (int i = 0; i < eliminateBallsO.length - 2; i++) {
+                for (MainCharacter m : team.team) {
+                    if (m.attribute == Attribute.values()[i < 6 ? i : i - 6]) {
+                        m.calculateAttack(i < 6 ? eliminateBallsO[i] : (int) (eliminateBallsO[i] * 1.5), eliminateBallsO[12] * 0.1);
+                    }
+                    if (Attribute.values()[i < 6 ? i : i - 6] == Attribute.HEART) {
+                        m.calculateRecover(i < 6 ? eliminateBallsO[i] : (int) (eliminateBallsO[i] * 1.5), eliminateBallsO[12] * 0.1);
+                    }
                 }
-                break;
+            }
+
+            // generate attack
+            for (MainCharacter m : team.team) {
+                for (Enemy e : enemies.get(nowLevel)) {
+                    if (!e.beAttacked(m.nowAttack)) {
+                        enemies.get(nowLevel).remove(e);
+                    }
+                    m.nowAttack = 0;
+                    break;
+                }
             }
             if (enemies.get(nowLevel).size() == 0) nowLevel += 1;
             two = null;
@@ -270,7 +291,7 @@ public class GameScene extends Scene {
                     turnTimeCountDown = -1;
                     turnBallTimer.cancel();
                     timeLimitBar.reset();
-                    if(timeLimitBar.animator != null) {
+                    if (timeLimitBar.animator != null) {
                         timeLimitBar.animator.shutdown();
                         timeLimitBar.animator = null;
                     }

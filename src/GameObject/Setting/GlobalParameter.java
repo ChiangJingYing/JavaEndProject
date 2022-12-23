@@ -1,4 +1,4 @@
-package GameObject;
+package GameObject.Setting;
 
 public class GlobalParameter {
     public static final int FPS = 60;
@@ -9,5 +9,8 @@ public class GlobalParameter {
     public static final int BALL_HEIGHT = 100;
     public static final int BALLPLATE_WIDTH = 5;
     public static final int BALLPLATE_HEIGHT = 6;
+
+    public static final int TEAM_WIDTH = 100;
+    public static final int TEAM_HEIGHT = 100;
 
 }
