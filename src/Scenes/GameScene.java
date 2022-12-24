@@ -87,8 +87,6 @@ public class GameScene extends Scene {
     public void paint(Graphics g) {
         timeLimitBar.paint(g);
         g.setColor(Color.white);
-        g.setFont(new Font("標楷體", Font.PLAIN, 24));
-        g.drawString(Integer.toString(turnTimeCountDown), 10, 50);
         // draw BallPlate
         for (ArrayList<Ball> list : balls) {
             for (Ball ball : list) {
@@ -106,6 +104,12 @@ public class GameScene extends Scene {
         for (MainCharacter m : team.team) {
             g.drawImage(m.character_Image, m.x, m.y, TEAM_WIDTH, TEAM_HEIGHT, null);
         }
+        if (turnTimeCountDown == -1) {
+            team.teamLife.paint(g);
+        }
+        g.setFont(new Font("標楷體", Font.PLAIN, 20));
+        g.setColor(Color.WHITE);
+        g.drawString(team.teamLife.getLife(), (int) team.teamLife.painter().right() - 110, (int) team.teamLife.painter().bottom() - 3);
 
     }
 

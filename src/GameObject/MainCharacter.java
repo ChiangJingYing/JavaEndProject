@@ -7,7 +7,7 @@ public class MainCharacter {
     public Attribute attribute;
     int attackPower;
     int recoverValue;
-    int healthValue;
+    public int healthValue;
     int skillCountdown;
 
     public int nowAttack = 0;
