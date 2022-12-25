@@ -6,7 +6,7 @@ public class Enemy {
     public Image enemyImage;
     Attribute attribute;
     public int attackCountDown;
-    int attackPower;
+    public int attackPower;
     int defencePower;
     int healthValue;
     boolean isSurvive = true;

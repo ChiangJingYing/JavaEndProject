@@ -13,7 +13,7 @@ public class LifeBar extends GameObject {
     int life;
     int nowLife;
     int injuryValue;
-    double minusRate;
+    double changeRate;
     double afterWidth;
     ScheduledExecutorService animator;
 
@@ -30,14 +30,23 @@ public class LifeBar extends GameObject {
             animator.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    collider().scaleX(collider().width() - minusRate);
-                    if (collider().width() <= afterWidth) {
+                    collider().scaleX(collider().width() + changeRate);
+                    if (changeRate < 0 && collider().width() <= afterWidth) {
+                        System.out.println("end");
+                        animator.shutdown();
+                        animator = null;
+                    }
+                    if (changeRate > 0 && collider().width() >= afterWidth) {
                         System.out.println("end");
                         animator.shutdown();
                         animator = null;
                     }
                 }
             }, 0, ((long) 1000 / 34), TimeUnit.MILLISECONDS);
+        } else {
+            animator.shutdown();
+            animator = null;
+            update();
         }
     }
 
@@ -59,14 +68,24 @@ public class LifeBar extends GameObject {
         injuryValue = value;
         if (injuryValue > 0) {
             nowLife -= injuryValue;
-            minusRate = ((float) injuryValue / life / GlobalParameter.FPS * 2) * painter().width();
+            changeRate = ((float) injuryValue / life / GlobalParameter.FPS * 2) * painter().width() * -1;
             afterWidth = ((float) nowLife / life) * painter().width();
             afterWidth = (afterWidth < 1) ? 5 : afterWidth;
             update();
         }
     }
 
+    public void recoverLife(int value) {
+        if (value > 0) {
+            nowLife = Math.min(life, nowLife + value);
+            changeRate = ((float) value / life / GlobalParameter.FPS * 2) * painter().width();
+            afterWidth = ((float) nowLife / life) * painter().width();
+            afterWidth = Math.min(afterWidth, painter().width());
+            update();
+        }
+    }
+
     public String getLife() {
-        return (life + "/" + life);
+        return (nowLife + "/" + life);
     }
 }

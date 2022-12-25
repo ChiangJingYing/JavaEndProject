@@ -6,7 +6,7 @@ public class MainCharacter {
     public Image character_Image;
     public Attribute attribute;
     int attackPower;
-    int recoverValue;
+    public int recoverValue;
     public int healthValue;
     int skillCountdown;
 

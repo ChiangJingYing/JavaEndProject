@@ -32,7 +32,9 @@ public class GameScene extends Scene {
     boolean canTurning = true; // 轉珠開關
     int numLevel = 3; // 關卡數量
     int nowLevel = 0; // 目前在第幾關
+    int roundCount = 0;
     int[] eliminateBalls = new int[1];
+    String lifeString;
     Animator strongBallAnimator;
 
     TimeLimitBar timeLimitBar;
@@ -60,19 +62,20 @@ public class GameScene extends Scene {
             }
         }
         team = new Team();
+        lifeString = team.teamLife.getLife();
 
         // init enemies
         for (int i = 0; i < numLevel; i++) {
             enemies.add(new ArrayList<>());
         }
         enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/巨象.png"),
-                Attribute.None, 1, 1000, 1, 100000,
+                Attribute.None, 1, 100, 1, 100000,
                 0 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
         enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
-                Attribute.None, 1, 1000, 100000, 100000,
+                Attribute.None, 2, 400, 100000, 100000,
                 1 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
         enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
-                Attribute.None, 1, 1000, 100000, 100000,
+                Attribute.None, 3, 600, 100000, 100000,
                 2 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
 
         AudioResourceController.getInstance().loop("../../../Audio/mainBGM.wav", Integer.MAX_VALUE);
@@ -109,7 +112,7 @@ public class GameScene extends Scene {
         }
         g.setFont(new Font("標楷體", Font.PLAIN, 20));
         g.setColor(Color.WHITE);
-        g.drawString(team.teamLife.getLife(), (int) team.teamLife.painter().right() - 110, (int) team.teamLife.painter().bottom() - 3);
+        g.drawString(lifeString, (int) team.teamLife.painter().right() - 110, (int) team.teamLife.painter().bottom() - 3);
 
     }
 
@@ -225,6 +228,9 @@ public class GameScene extends Scene {
                     }
                     if (Attribute.values()[i < 6 ? i : i - 6] == Attribute.HEART) {
                         m.calculateRecover(i < 6 ? eliminateBallsO[i] : (int) (eliminateBallsO[i] * 1.5), eliminateBallsO[12] * 0.1);
+                        team.teamLife.recoverLife(m.nowRecover);
+                        m.nowRecover = 0;
+                        lifeString = team.teamLife.getLife();
                     }
                 }
             }
@@ -237,6 +243,13 @@ public class GameScene extends Scene {
                     }
                     m.nowAttack = 0;
                     break;
+                }
+            }
+
+            for (Enemy e : enemies.get(nowLevel)) {
+                if (roundCount != 0 && roundCount % e.attackCountDown == 0) {
+                    team.teamLife.decreaseLife(e.attackPower);
+                    lifeString = team.teamLife.getLife();
                 }
             }
             if (enemies.get(nowLevel).size() == 0) nowLevel += 1;
@@ -296,6 +309,7 @@ public class GameScene extends Scene {
                     turnBallTimer.cancel();
                     timeLimitBar.reset();
                     if (timeLimitBar.animator != null) {
+                        roundCount += 1;
                         timeLimitBar.animator.shutdown();
                         timeLimitBar.animator = null;
                     }
