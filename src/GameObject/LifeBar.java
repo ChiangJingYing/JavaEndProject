@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 public class LifeBar extends GameObject {
     int life;
-    int nowLife;
+    public int nowLife;
     int injuryValue;
     double changeRate;
     double afterWidth;
