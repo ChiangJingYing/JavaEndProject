@@ -313,7 +313,10 @@ public class GameScene extends Scene {
                 if (state == CommandSolver.MouseState.RELEASED) {
                     canTurning = false;
                     turnTimeCountDown = -1;
-                    turnBallTimer.cancel();
+                    if (turnBallTimer != null) {
+                        turnBallTimer.cancel();
+                    }
+
                     timeLimitBar.reset();
                     if (timeLimitBar.animator != null) {
                         roundCount += 1;
