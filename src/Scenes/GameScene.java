@@ -61,6 +61,7 @@ public class GameScene extends Scene {
                         j, i, Attribute.values()[random.nextInt(6)]));
             }
         }
+
         team = new Team();
         lifeString = team.teamLife.getLife();
 
@@ -101,12 +102,15 @@ public class GameScene extends Scene {
         // draw enemies
         for (Enemy enemy : enemies.get(nowLevel)) {
             g.drawImage(enemy.enemyImage, enemy.x, enemy.y, 100, 100, null);
+
+            g.setColor(Color.red);
+            g.setFont(new Font("標楷體", Font.PLAIN, 12));
+            int tmp = (roundCount + 1) % enemy.attackCountDown;
+            g.drawString(Integer.toString(enemy.attackCountDown - (tmp == 0 ? enemy.attackCountDown : tmp) + 1), enemy.x - 3, enemy.y);
             enemy.life.paint(g);
         }
 
-        for (MainCharacter m : team.team) {
-            g.drawImage(m.character_Image, m.x, m.y, TEAM_WIDTH, TEAM_HEIGHT, null);
-        }
+        team.paint(g);
         if (turnTimeCountDown == -1) {
             team.teamLife.paint(g);
         }
@@ -211,8 +215,6 @@ public class GameScene extends Scene {
                 throw new RuntimeException(e);
             }
 
-            // TODO calculate attack value
-
             if (eliminateBallsO[12] != -1) {
                 for (int i = 0; i < 6; i++)
                     System.out.println("\u001B[34m" + Arrays.asList(Attribute.values()).get(i) + ": " + eliminateBallsO[i] + "\u001B[39m");
@@ -246,13 +248,18 @@ public class GameScene extends Scene {
                 }
             }
 
+            // be attacked
             for (Enemy e : enemies.get(nowLevel)) {
                 if (roundCount != 0 && roundCount % e.attackCountDown == 0) {
                     team.teamLife.decreaseLife(e.attackPower);
                     lifeString = team.teamLife.getLife();
                 }
             }
-            if (enemies.get(nowLevel).size() == 0) nowLevel += 1;
+            // change level
+            if (enemies.get(nowLevel).size() == 0) {
+                nowLevel += 1;
+                roundCount = 0;
+            }
             two = null;
             canTurning = true;
         };

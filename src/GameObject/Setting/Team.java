@@ -5,10 +5,10 @@ import GameObject.Attribute;
 import GameObject.LifeBar;
 import GameObject.MainCharacter;
 
+import java.awt.*;
 import java.util.ArrayList;
 
-import static GameObject.Setting.GlobalParameter.BALLPLATE_WIDTH;
-import static GameObject.Setting.GlobalParameter.BALL_WIDTH;
+import static GameObject.Setting.GlobalParameter.*;
 
 public class Team {
     public ArrayList<MainCharacter> team;
@@ -39,6 +39,12 @@ public class Team {
     private void calculateLife() {
         for (MainCharacter m : team) {
             life += m.healthValue;
+        }
+    }
+
+    public void paint(Graphics g) {
+        for (MainCharacter m : this.team) {
+            g.drawImage(m.character_Image, m.x, m.y, TEAM_WIDTH, TEAM_HEIGHT, null);
         }
     }
 }
