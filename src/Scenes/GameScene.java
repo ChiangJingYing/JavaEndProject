@@ -72,7 +72,6 @@ public class GameScene extends Scene {
 
     @Override
     public void sceneEnd() {
-
     }
 
     @Override
