@@ -32,7 +32,7 @@ public class GameScene extends Scene {
     ScheduledExecutorService two;
     boolean canTurning = true; // 轉珠開關
     int numLevel = 3; // 關卡數量
-    int nowLevel = 0; // 目前在第幾關
+    int nowLevel = 2; // 目前在第幾關
     int roundCount = 0;
     int[] eliminateBalls = new int[1];
     String lifeString;
@@ -70,7 +70,7 @@ public class GameScene extends Scene {
         enemies = new Enemies(numLevel);
 
         audio = AudioResourceController.getInstance();
-        audio.loop("../../../Audio/mainBGM.wav", Integer.MAX_VALUE);
+        audio.loop("../../../Audio/Game.wav", Integer.MAX_VALUE);
     }
 
     @Override
@@ -245,7 +245,7 @@ public class GameScene extends Scene {
                     team.teamLife.decreaseLife(e.attackPower);
                     lifeString = team.teamLife.getLife();
                     if (team.teamLife.nowLife <= 0) {
-                        audio.stop("../../../Audio/mainBGM.wav");
+                        audio.stop("../../../Audio/Game.wav");
                         SceneController.instance().change(new EndScene());
                     }
                 }
@@ -254,9 +254,12 @@ public class GameScene extends Scene {
             if (enemies.enemies.get(nowLevel).size() == 0) {
                 nowLevel += 1;
                 roundCount = 0;
-                if (nowLevel == numLevel) {
-                    AudioResourceController.getInstance().stop("../../../Audio/mainBGM.wav");
+                if (nowLevel == numLevel - 1) {
+                    AudioResourceController.getInstance().stop("../../../Audio/Game.wav");
                     AudioResourceController.getInstance().loop("../../../Audio/Boss.wav", Integer.MAX_VALUE);
+                }
+                if (nowLevel == numLevel) {
+                    SceneController.instance().change(new Victory());
                 }
             }
             two = null;

@@ -31,15 +31,15 @@ public class Enemies {
 
         // 第二關
         enemies.get(1).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/巨象.png"),
-                Attribute.None, 1, 100, 1, 100000,
+                Attribute.None, 1, 100, 1, 250000,
                 SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
         enemies.get(1).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
-                Attribute.None, 2, 400, 12500, 10000,
+                Attribute.None, 2, 400, 5000, 100000,
                 BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
 
         // 第三關
         enemies.get(2).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
-                Attribute.None, 3, 600, 100000, 100000,
+                Attribute.None, 3, 600, 12500, 99999,
                 2 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
     }
 }

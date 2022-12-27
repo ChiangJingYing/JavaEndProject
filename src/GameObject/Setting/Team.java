@@ -18,17 +18,17 @@ public class Team {
     public Team() {
         team = new ArrayList<>();
         team.add(new MainCharacter(ImageController.instance().tryGetImage("../../../Image/Balls/None.png"),
-                Attribute.DARK, 1000, 100, 500, 5, 150, 210));
+                Attribute.DARK, 1200, 100, 500, 5, 150, 210));
         team.add(new MainCharacter(ImageController.instance().tryGetImage("../../../Image/Balls/None.png"),
                 Attribute.DARK, 1000, 100, 500, 5, 250, 210));
         team.add(new MainCharacter(ImageController.instance().tryGetImage("../../../Image/Balls/None.png"),
-                Attribute.DARK, 1000, 100, 500, 5, 350, 210));
+                Attribute.WATER, 900, 100, 500, 5, 350, 210));
         team.add(new MainCharacter(ImageController.instance().tryGetImage("../../../Image/Balls/None.png"),
-                Attribute.DARK, 1000, 100, 500, 5, 450, 210));
+                Attribute.FIRE, 3200, 100, 500, 5, 450, 210));
         team.add(new MainCharacter(ImageController.instance().tryGetImage("../../../Image/Balls/None.png"),
-                Attribute.DARK, 1000, 100, 500, 5, 550, 210));
+                Attribute.TREE, 1250, 100, 500, 5, 550, 210));
         team.add(new MainCharacter(ImageController.instance().tryGetImage("../../../Image/Balls/None.png"),
-                Attribute.DARK, 1000, 100, 500, 5, 650, 210));
+                Attribute.LIGHT, 900, 500, 1250, 5, 650, 210));
 
         calculateLife();
         teamLife = new LifeBar(-1, -1, (BALL_WIDTH * BALLPLATE_WIDTH), 20, life);
