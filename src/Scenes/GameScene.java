@@ -1,6 +1,7 @@
 package Scenes;
 
 import GameKernel.utils.controllers.AudioResourceController;
+import GameKernel.utils.controllers.SceneController;
 import GameKernel.utils.core.CommandSolver;
 import GameKernel.utils.core.Scene;
 import GameKernel.utils.gameobjects.Animator;
@@ -36,6 +37,7 @@ public class GameScene extends Scene {
     int[] eliminateBalls = new int[1];
     String lifeString;
     Animator strongBallAnimator;
+    AudioResourceController audio;
 
     TimeLimitBar timeLimitBar;
 
@@ -67,7 +69,8 @@ public class GameScene extends Scene {
         // init enemies
         enemies = new Enemies(numLevel);
 
-        AudioResourceController.getInstance().loop("../../../Audio/Game.wav", Integer.MAX_VALUE);
+        audio = AudioResourceController.getInstance();
+        audio.loop("../../../Audio/mainBGM.wav", Integer.MAX_VALUE);
     }
 
     @Override
@@ -241,6 +244,10 @@ public class GameScene extends Scene {
                 if (roundCount != 0 && roundCount % e.attackCountDown == 0) {
                     team.teamLife.decreaseLife(e.attackPower);
                     lifeString = team.teamLife.getLife();
+                    if (team.teamLife.nowLife <= 0) {
+                        audio.stop("../../../Audio/mainBGM.wav");
+                        SceneController.instance().change(new EndScene());
+                    }
                 }
             }
             // change level
