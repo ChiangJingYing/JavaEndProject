@@ -79,7 +79,7 @@ public class GameScene extends Scene {
                 Attribute.None, 3, 600, 100000, 100000,
                 2 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
 
-        AudioResourceController.getInstance().loop("../../../Audio/mainBGM.wav", Integer.MAX_VALUE);
+        AudioResourceController.getInstance().loop("../../../Audio/Game.wav", Integer.MAX_VALUE);
     }
 
     @Override
@@ -259,6 +259,10 @@ public class GameScene extends Scene {
             if (enemies.get(nowLevel).size() == 0) {
                 nowLevel += 1;
                 roundCount = 0;
+                if (nowLevel == numLevel) {
+                    AudioResourceController.getInstance().stop("../../../Audio/mainBGM.wav");
+                    AudioResourceController.getInstance().loop("../../../Audio/Boss.wav", Integer.MAX_VALUE);
+                }
             }
             two = null;
             canTurning = true;
