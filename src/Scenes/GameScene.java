@@ -1,11 +1,11 @@
 package Scenes;
 
 import GameKernel.utils.controllers.AudioResourceController;
-import GameKernel.utils.controllers.ImageController;
 import GameKernel.utils.core.CommandSolver;
 import GameKernel.utils.core.Scene;
 import GameKernel.utils.gameobjects.Animator;
 import GameObject.*;
+import GameObject.Setting.Enemies;
 import GameObject.Setting.Team;
 
 import java.awt.*;
@@ -19,7 +19,7 @@ import static GameObject.Setting.GlobalParameter.*;
 
 public class GameScene extends Scene {
     ArrayList<ArrayList<Ball>> balls;
-    ArrayList<ArrayList<Enemy>> enemies;
+    Enemies enemies;
     Team team;
     Ball ControlBall;
     Random random;
@@ -48,7 +48,6 @@ public class GameScene extends Scene {
         timeLimitBar = new TimeLimitBar(-1, -1, BALL_WIDTH * BALLPLATE_WIDTH, 10, turnTime);
         random = new Random();
         balls = new ArrayList<>();
-        enemies = new ArrayList<>();
 
         // init animator
         strongBallAnimator = new Animator("../../../Image/Balls/stringBall.png", 10, 80, 80, new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19});
@@ -66,18 +65,7 @@ public class GameScene extends Scene {
         lifeString = team.teamLife.getLife();
 
         // init enemies
-        for (int i = 0; i < numLevel; i++) {
-            enemies.add(new ArrayList<>());
-        }
-        enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/巨象.png"),
-                Attribute.None, 1, 100, 1, 100000,
-                0 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
-        enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
-                Attribute.None, 2, 400, 100000, 100000,
-                1 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
-        enemies.get(0).add(new Enemy(ImageController.instance().tryGetImage("../../../boss/毒龍.png"),
-                Attribute.None, 3, 600, 100000, 100000,
-                2 * BALL_WIDTH + SCREEN_WIDTH / 2 - (int) (BALL_WIDTH * 1.5), 30));
+        enemies = new Enemies(numLevel);
 
         AudioResourceController.getInstance().loop("../../../Audio/Game.wav", Integer.MAX_VALUE);
     }
@@ -100,7 +88,7 @@ public class GameScene extends Scene {
             }
         }
         // draw enemies
-        for (Enemy enemy : enemies.get(nowLevel)) {
+        for (Enemy enemy : enemies.enemies.get(nowLevel)) {
             g.drawImage(enemy.enemyImage, enemy.x, enemy.y, 100, 100, null);
 
             g.setColor(Color.red);
@@ -239,9 +227,9 @@ public class GameScene extends Scene {
 
             // generate attack
             for (MainCharacter m : team.team) {
-                for (Enemy e : enemies.get(nowLevel)) {
+                for (Enemy e : enemies.enemies.get(nowLevel)) {
                     if (!e.beAttacked(m.nowAttack)) {
-                        enemies.get(nowLevel).remove(e);
+                        enemies.enemies.get(nowLevel).remove(e);
                     }
                     m.nowAttack = 0;
                     break;
@@ -249,14 +237,14 @@ public class GameScene extends Scene {
             }
 
             // be attacked
-            for (Enemy e : enemies.get(nowLevel)) {
+            for (Enemy e : enemies.enemies.get(nowLevel)) {
                 if (roundCount != 0 && roundCount % e.attackCountDown == 0) {
                     team.teamLife.decreaseLife(e.attackPower);
                     lifeString = team.teamLife.getLife();
                 }
             }
             // change level
-            if (enemies.get(nowLevel).size() == 0) {
+            if (enemies.enemies.get(nowLevel).size() == 0) {
                 nowLevel += 1;
                 roundCount = 0;
                 if (nowLevel == numLevel) {
