@@ -32,7 +32,7 @@ public class GameScene extends Scene {
     ScheduledExecutorService two;
     boolean canTurning = true; // 轉珠開關
     int numLevel = 3; // 關卡數量
-    int nowLevel = 2; // 目前在第幾關
+    int nowLevel = 0; // 目前在第幾關
     int roundCount = 0;
     int[] eliminateBalls = new int[1];
     String lifeString;
@@ -252,15 +252,16 @@ public class GameScene extends Scene {
             }
             // change level
             if (enemies.enemies.get(nowLevel).size() == 0) {
-                nowLevel += 1;
                 roundCount = 0;
-                if (nowLevel == numLevel - 1) {
+                if (nowLevel + 1 == numLevel - 1) {
                     AudioResourceController.getInstance().stop("../../../Audio/Game.wav");
                     AudioResourceController.getInstance().loop("../../../Audio/Boss.wav", Integer.MAX_VALUE);
                 }
-                if (nowLevel == numLevel) {
+                if (nowLevel + 1 == numLevel) {
+                    AudioResourceController.getInstance().stop("../../../Audio/Boss.wav");
                     SceneController.instance().change(new Victory());
                 }
+                nowLevel += 1;
             }
             two = null;
             canTurning = true;
