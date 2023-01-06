@@ -32,7 +32,7 @@ public class GameScene extends Scene {
     ScheduledExecutorService two;
     boolean canTurning = true; // 轉珠開關
     int numLevel = 3; // 關卡數量
-    int nowLevel = 2; // 目前在第幾關
+    int nowLevel = 0; // 目前在第幾關
     int roundCount = 0;
     int[] eliminateBalls = new int[1];
     String lifeString;
